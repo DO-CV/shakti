@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 
-project(DO-Shakti)
+project(Shakti)
 
 if (POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
@@ -8,7 +8,11 @@ endif ()
 
 
 # Set CMake module path.
-set(DO_Sara_DIR /usr/include/DO/Sara)
+if (WIN32)
+  set(DO_Sara_DIR "C:/Program Files/DO-Sara/include/DO/Sara")
+else ()
+  set(DO_Sara_DIR /usr/include/DO/Sara)
+endif ()
 list(APPEND CMAKE_MODULE_PATH
      ${DO_Sara_DIR}/cmake
      ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -29,6 +33,7 @@ endif ()
 include_directories(
   ${CUDA_TOOLKIT_INCLUDE}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${DO_Sara_INCLUDE_DIRS}
   src
 )
 
