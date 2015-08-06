@@ -49,14 +49,14 @@ namespace DO { namespace Shakti {
   public: /* methods */
     //! \brief Default constructor.
     __host__ __device__
-    inline MultiArrayView() {} //= default;
+    inline MultiArrayView() = default;
 
     //! \brief Constructor that wraps plain data with its known sizes.
     __host__ __device__
     inline MultiArrayView(value_type *data, const vector_type& sizes)
-      : _data(data)
-      , _sizes(sizes)
-      , _strides(strides_type::compute(sizes))
+      : _data{ data }
+      , _sizes{ sizes }
+      , _strides{ strides_type::compute(sizes) }
     {
     }
 
@@ -239,11 +239,11 @@ namespace DO { namespace Shakti {
 
   protected: /* data members. */
     //! \brief Internal storage array.
-    value_type *_data = nullptr;
+    value_type *_data{ nullptr };
     //! \brief Vector of size along each dimension.
-    vector_type _sizes = vector_type();
+    vector_type _sizes{ vector_type{} };
     //! \brief Vector of stride for each dimension.
-    vector_type _strides = vector_type();
+    vector_type _strides{ vector_type{} };
   };
 
 } /* namespace Shakti */

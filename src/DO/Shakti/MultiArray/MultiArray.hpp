@@ -36,27 +36,34 @@ namespace DO { namespace Shakti {
 
     __host__
     inline MultiArray(const vector_type& sizes)
-      : base_type()
+      : base_type{}
     {
       resize(sizes);
     }
 
     __host__
     inline MultiArray(const self_type& other)
-      : base_type()
+      : self_type{ other.sizes() }
     {
-      resize(other._sizes);
       CHECK_CUDA_RUNTIME_ERROR(
         cudaMemcpy(_data, other._begin, other.size() * sizeof(T),
                    cudaMemcpyHostToDevice));
     }
 
-    __host__ __device__
-    inline MultiArray(self_type&& other)
-      : MultiArray()
+    __host__
+    inline MultiArray(const T *host_data, const Vector2i& sizes)
+      : self_type{ sizes }
     {
-      _data = other._data;
-      other._data = nullptr;
+      CHECK_CUDA_RUNTIME_ERROR(
+        cudaMemcpy(_data, host_data, size() * sizeof(T),
+                   cudaMemcpyHostToDevice));
+    }
+
+    __host__
+    inline MultiArray(self_type&& other)
+      : self_type{}
+    {
+      std::swap(_data, other._data);
       _sizes = other._sizes;
       _strides = other._strides;
     }
