@@ -19,7 +19,7 @@ list(APPEND CMAKE_MODULE_PATH
 
 # Find third-party libraries.
 find_package(CUDA 7.0 REQUIRED)
-find_package(DO_Sara COMPONENTS Core Graphics VideoIO REQUIRED)
+find_package(DO_Sara COMPONENTS Core Graphics ImageIO VideoIO REQUIRED)
 
 # Use custom CMake macros.
 include(convenience_macros)
