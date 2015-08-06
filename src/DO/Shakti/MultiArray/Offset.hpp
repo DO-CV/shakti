@@ -51,7 +51,7 @@ namespace DO { namespace Shakti {
   __device__
   inline Vector2i grid_strides<2>()
   {
-    return { blockDim.y * gridDim.y, 1 };
+    return { 1, blockDim.x * gridDim.x };
   }
 
   template <>
@@ -59,9 +59,9 @@ namespace DO { namespace Shakti {
   inline Vector3i grid_strides<3>()
   {
     return {
-      blockDim.y * gridDim.y * blockDim.z * gridDim.z,
-      blockDim.z * gridDim.z,
-      1
+      1,
+      blockDim.x * gridDim.x,
+      blockDim.x * gridDim.x * blockDim.y * gridDim.y,
     };
   }
   //! @}
@@ -90,5 +90,5 @@ namespace DO { namespace Shakti {
   }
   //! @}
 
-}
-}
+} /* namespace Shakti */
+} /* namespace DO */
