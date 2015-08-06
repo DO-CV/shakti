@@ -200,16 +200,23 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
+    //! \brief Copy the ND-array device array to host array.
+    //! You must allocate the array with the appropriate size.
+    __host__
+    inline void copy_to_host(T *host_array) const
+    {
+      CHECK_CUDA_RUNTIME_ERROR(
+        cudaMemcpy(host_array, _data, sizeof(T) * size(),
+                   cudaMemcpyDeviceToHost));
+    }
+
     //! \brief Copy the ND-array content to a std::vector object.
     __host__
-    inline void to_std_vector(std::vector<T>& array) const
+    inline void copy_to_host(std::vector<T>& host_vector) const
     {
-      if (array.size() != size())
-        array.resize(size());
-
-      CHECK_CUDA_RUNTIME_ERROR(
-        cudaMemcpy(array.data(), _data, sizeof(T) * size(),
-                   cudaMemcpyDeviceToHost));
+      if (host_vector.size() != size())
+        host_vector.resize(size());
+      copy_to_host(host_vector.data());
     }
 
   protected:
