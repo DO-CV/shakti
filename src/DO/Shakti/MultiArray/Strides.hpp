@@ -32,5 +32,5 @@ namespace DO { namespace Shakti {
     }
   };
 
-} /* namespace Dhara */
+} /* namespace Shakti */
 } /* namespace DO */
