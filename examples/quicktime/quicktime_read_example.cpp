@@ -4,8 +4,11 @@
 #include <lqt/lqt.h>
 
 #include <DO/Sara/Core/DebugUtilities.hpp>
+#include <DO/Sara/Core/Timer.hpp>
 #include <DO/Sara/Graphics.hpp>
+#include <DO/Sara/ImageProcessing.hpp>
 
+#include "../image_processing/image_processing.hpp"
 
 namespace DO { namespace Sara {
 
@@ -18,7 +21,9 @@ namespace DO { namespace Sara {
     {
       _video_file = quicktime_open(video_filepath.c_str(), 1, 0);
       _num_tracks = quicktime_video_tracks(_video_file);
+
       _current_track = 0;
+      _current_track_supported = false;
     }
 
     ~QuicktimeVideoStream()
@@ -58,7 +63,32 @@ namespace DO { namespace Sara {
         lqt_frame_duration(_video_file, _current_track, nullptr);
     }
 
-    bool read(Image<Rgb8>& video_frame);
+    void bind_frame_rows(Image<Rgb8>& frame)
+    {
+      auto sizes = this->sizes();
+      frame.resize(sizes);
+      _current_frame_rows.resize(sizes[1]);
+      for (int y = 0; y < sizes[1]; ++y)
+        _current_frame_rows[y] = reinterpret_cast<unsigned char *>(&frame(0,y));
+    }
+
+    bool read(Image<Rgb8>& video_frame, bool bind_frame = true)
+    {
+      if (!_current_track_supported &&
+          quicktime_supported_video(_video_file, _current_track) == 0)
+      {
+        std::cout
+          << "Movie track " << _current_track
+          << " is unsupported by liquicktime!" << std::endl;
+        return false;
+      }
+
+      if (video_frame.sizes() != sizes() || bind_frame)
+        bind_frame_rows(video_frame);
+      quicktime_decode_video(_video_file, _current_frame_rows.data(), _current_track);
+
+      return true;
+    }
 
   private:
     quicktime_t *_video_file;
@@ -66,7 +96,7 @@ namespace DO { namespace Sara {
     std::vector<unsigned char *> _video_rows;
 
     int _current_track;
-    Image<Rgb8> _current_frame;
+    bool _current_track_supported;
     std::vector<unsigned char *> _current_frame_rows;
   };
 
@@ -74,7 +104,24 @@ namespace DO { namespace Sara {
 } /* namespace DO */
 
 
+namespace {
+  static DO::Sara::Timer timer;
+
+  void tic()
+  {
+    timer.restart();
+  }
+
+  void toc(const char *what)
+  {
+    auto time = timer.elapsedMs();
+    std::cout << "[" << what << "] Elapsed time = " << time << " ms" << std::endl;
+  }
+}
+
+
 namespace sara = DO::Sara;
+namespace shakti = DO::Shakti;
 
 
 using namespace std;
@@ -90,57 +137,36 @@ std::unique_ptr<T> make_unique(Args&&... args)
 
 GRAPHICS_MAIN()
 {
-  auto movie_filepath = string{ "/home/david/Downloads/sample_iTunes.mov" };
-  auto movie_file = quicktime_open(movie_filepath.c_str(), 1, 0);
+  auto video_filepath = string{ "/home/david/Desktop/HAVAS_DANONE_PITCH_EP_1011.mov" };
+  auto video_stream = sara::QuicktimeVideoStream{ video_filepath };
+  auto video_frame = sara::Image<sara::Rgb8>{};
 
-  auto movie_tracks = quicktime_video_tracks(movie_file);
-  CHECK(movie_tracks);
+  auto in_frame = sara::Image<float>{};
+  auto out_frame = sara::Image<float>{};
 
-  for (int track = 0; track < movie_tracks; ++track)
+  video_stream.bind_frame_rows(video_frame);
+
+  while (true)
   {
-    if (quicktime_supported_video(movie_file, track) == 0)
-    {
-      cout << "Movie track " << track << " is unsupported by liquicktime!" << endl;
-      continue;
-    }
+    video_stream.read(video_frame, false);
 
-    auto video_frame_sizes = sara::Vector2i{
-      quicktime_video_width(movie_file, track),
-      quicktime_video_height(movie_file, track)
-    };
-    auto video_depth = quicktime_video_depth(movie_file, track);
+    tic();
+    in_frame = video_frame.convert<float>();
+    out_frame.resize(in_frame.sizes());
+    toc("Color conversion");
 
-    auto video_frame = sara::Image<sara::Rgb8>{ video_frame_sizes };
-    auto video_rows = vector<unsigned char *>{ video_frame_sizes.y() };
-    for (int r = 0; r < video_frame_sizes[1]; ++r)
-      video_rows[r] = reinterpret_cast<unsigned char *>(&video_frame(0, r));
+    tic();
+    shakti::gradient(out_frame.data(), in_frame.data(), in_frame.sizes().data());
+    //out_frame = in_frame.compute<sara::Gradient>().compute<sara::SquaredNorm>();
+    //out_frame.array() = out_frame.array().sqrt();
+    toc("Gradient");
 
-    double video_frame_rate = lqt_video_time_scale(movie_file, track) / lqt_frame_duration(movie_file, track, nullptr);
-    auto color_model = lqt_get_cmodel(movie_file, track);
-    auto color_model_name = lqt_colormodel_to_string(color_model);
-    CHECK(color_model_name);
-
-    auto previous_timestamp = int64_t{ -1 };
-    auto timestamp = int64_t{};
-    auto ret = int{};
-    do
-    {
-      timestamp = lqt_frame_time(movie_file, track);
-      ret = lqt_decode_video(movie_file, video_rows.data(), track);
-
-      CHECK(previous_timestamp);
-      CHECK(timestamp);
-      CHECK(ret);
-
-      if (!sara::active_window())
-        sara::create_window(video_frame_sizes);
-      sara::display(video_frame);
-
-      previous_timestamp = timestamp;
-    } while(ret == 0);
+    tic();
+    if (!sara::active_window())
+      sara::create_window(video_frame.sizes());
+    sara::display(out_frame);
+    toc("Display");
   }
-
-  quicktime_close(movie_file);
 
   return 0;
 }
