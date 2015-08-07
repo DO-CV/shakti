@@ -7,6 +7,7 @@
 
 #include "image_processing.hpp"
 
+
 namespace sara = DO::Sara;
 namespace shakti = DO::Shakti;
 
@@ -38,7 +39,9 @@ GRAPHICS_MAIN()
     std::vector<shakti::Device> devices{ shakti::get_devices() };
     cout << devices.back() << endl;
 
-    VideoStream video_stream{ "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg" };
+    VideoStream video_stream{
+      "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg"
+    };
     int video_frame_index{ 0 };
     Image<Rgb8> video_frame;
     Image<float> in_frame;
@@ -64,7 +67,7 @@ GRAPHICS_MAIN()
       toc("Display");
 
       ++video_frame_index;
-      //cout << endl;
+      cout << endl;
     }
 
   }
