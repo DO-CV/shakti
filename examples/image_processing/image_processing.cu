@@ -109,5 +109,24 @@ namespace DO { namespace Shakti {
     toc("Device to host transfer");
   }
 
+  void apply_row_based_convolution(float *out, const float *in, const float *kernel, const
+                                   int *kernel_size, const int *sizes)
+  {
+  }
+
+  void apply_column_based_convolution(float *out, const float *in, const float *kernel, const
+                                      int *kernel_size, const int *sizes)
+  {
+  }
+
+  void apply_row_based_filter(float *out_ptr, const float *in_ptr, const int *sizes)
+  {
+  }
+
+  void apply_column_filter(float *out_ptr, const float *in_ptr, const int *sizes)
+  {
+  }
+
+
 } /* namespace Shakti */
 } /* namespace DO */

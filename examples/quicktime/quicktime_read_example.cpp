@@ -10,6 +10,7 @@
 
 #include "../image_processing/image_processing.hpp"
 
+
 namespace DO { namespace Sara {
 
   class QuicktimeVideoStream
@@ -105,6 +106,7 @@ namespace DO { namespace Sara {
 
 
 namespace {
+
   static DO::Sara::Timer timer;
 
   void tic()
@@ -127,7 +129,6 @@ namespace shakti = DO::Shakti;
 using namespace std;
 
 
-
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args)
 {
@@ -146,6 +147,7 @@ GRAPHICS_MAIN()
 
   video_stream.bind_frame_rows(video_frame);
 
+  int frame = 0;
   while (true)
   {
     video_stream.read(video_frame, false);
@@ -166,6 +168,8 @@ GRAPHICS_MAIN()
       sara::create_window(video_frame.sizes());
     sara::display(out_frame);
     toc("Display");
+
+    ++frame;
   }
 
   return 0;
