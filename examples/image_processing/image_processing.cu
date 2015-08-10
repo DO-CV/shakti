@@ -11,7 +11,7 @@
 using namespace std;
 
 
-namespace DO { namespace Shakti { namespace cuda {
+namespace DO { namespace Shakti { namespace Cuda {
 
   template <typename T>
   class Array
@@ -54,7 +54,7 @@ namespace DO { namespace Shakti { namespace cuda {
     cudaArray *_array = nullptr;
   };
 
-} /* namespace cuda */
+} /* namespace Cuda */
 } /* namespace Shakti */
 } /* namespace DO */
 
@@ -78,7 +78,7 @@ namespace DO { namespace Shakti { namespace {
 #endif
   }
 
-} /* namespace profiling */
+} /* namespace Profiling */
 } /* namespace Shakti */
 } /* namespace DO */
 
@@ -94,7 +94,7 @@ namespace DO { namespace Shakti {
     };
 
     tic();
-    cuda::Array<float> in{ in_ptr, { sizes[0], sizes[1] } };
+    Cuda::Array<float> in{ in_ptr, { sizes[0], sizes[1] } };
     MultiArray<float, 2> out{ { sizes[0], sizes[1] } };
     toc("Host to device transfer");
 
