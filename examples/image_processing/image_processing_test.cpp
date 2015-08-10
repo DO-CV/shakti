@@ -7,6 +7,7 @@
 
 #include "image_processing.hpp"
 
+
 namespace sara = DO::Sara;
 namespace shakti = DO::Shakti;
 
@@ -40,9 +41,9 @@ GRAPHICS_MAIN()
     std::vector<shakti::Device> devices{ shakti::get_devices() };
     cout << devices.back() << endl;
 
-    cout.sync_with_stdio(false);
-
-    VideoStream video_stream{ "C:/Users/David/Desktop/Paco de Lucia & John McLaughlin - 1987-07-17 Treptower Park East-Berlin Germany 76.38 DVB-S Pro-Shot MC.mpg" };
+    VideoStream video_stream{
+      "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg"
+    };
     int video_frame_index{ 0 };
     Image<Rgb8> video_frame;
     Image<float> in_frame;
@@ -69,8 +70,12 @@ GRAPHICS_MAIN()
 #ifdef DISPLAY
       tic();
       display(out_frame);
+<<<<<<< HEAD:examples/image_processing_test.cpp
       toc("Image display");
 #endif
+=======
+      toc("Display");
+>>>>>>> origin/master:examples/image_processing/image_processing_test.cpp
 
       ++video_frame_index;
       cout << endl;

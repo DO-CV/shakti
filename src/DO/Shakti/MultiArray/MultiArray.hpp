@@ -55,7 +55,7 @@ namespace DO { namespace Shakti {
       : self_type{ sizes }
     {
       CHECK_CUDA_RUNTIME_ERROR(
-        cudaMemcpy(_data, host_data, size() * sizeof(T),
+        cudaMemcpy(_data, host_data, base_type::size() * sizeof(T),
                    cudaMemcpyHostToDevice));
     }
 

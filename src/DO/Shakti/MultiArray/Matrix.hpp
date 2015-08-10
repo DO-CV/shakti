@@ -14,7 +14,9 @@ namespace DO { namespace Shakti {
   {
   public:
     __host__ __device__
-    inline Matrix() = default;
+    inline Matrix()
+    {
+    }
 
     __host__ __device__
     inline Matrix(const Matrix& other)
@@ -209,7 +211,7 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline T dot(const Matrix& other) const
     {
-      T res{0};
+      T res{ 0 };
       for (int i = 0; i < M*N; ++i)
         res += _data[i] * other._data[i];
       return res;
