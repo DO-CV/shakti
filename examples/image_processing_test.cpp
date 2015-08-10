@@ -16,6 +16,7 @@ using namespace sara;
 
 
 namespace {
+
   static Timer timer;
 
   void tic()
@@ -28,6 +29,7 @@ namespace {
     auto time = timer.elapsedMs();
     cout << "[" << what << "] Elapsed time = " << time << " ms" << endl;
   }
+
 }
 
 
@@ -46,11 +48,14 @@ GRAPHICS_MAIN()
     Image<float> in_frame;
     Image<float> out_frame;
 
+#define DISPLAY
     while (video_stream.read(video_frame))
     {
       cout << "[Read frame] " << video_frame_index << "" << endl;
+#ifdef DISPLAY
       if (!active_window())
         create_window(video_frame.sizes());
+#endif
 
       tic();
       in_frame = video_frame.convert<float>();
@@ -61,9 +66,11 @@ GRAPHICS_MAIN()
       shakti::gradient(out_frame.data(), in_frame.data(), in_frame.sizes().data());
       toc("Gradient");
 
+#ifdef DISPLAY
       tic();
       display(out_frame);
       toc("Image display");
+#endif
 
       ++video_frame_index;
       cout << endl;
