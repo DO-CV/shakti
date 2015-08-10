@@ -70,12 +70,8 @@ GRAPHICS_MAIN()
 #ifdef DISPLAY
       tic();
       display(out_frame);
-<<<<<<< HEAD:examples/image_processing_test.cpp
-      toc("Image display");
-#endif
-=======
       toc("Display");
->>>>>>> origin/master:examples/image_processing/image_processing_test.cpp
+#endif
 
       ++video_frame_index;
       cout << endl;
