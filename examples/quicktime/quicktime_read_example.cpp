@@ -4,9 +4,11 @@
 #include <lqt/lqt.h>
 
 #include <DO/Sara/Core/DebugUtilities.hpp>
-#include <DO/Sara/Core/Timer.hpp>
 #include <DO/Sara/Graphics.hpp>
 #include <DO/Sara/ImageProcessing.hpp>
+
+#include <DO/Shakti/Utilities/Timer.hpp>
+#include <DO/Shakti/MultiArray/MultiArray.hpp>
 
 #include "../image_processing/image_processing.hpp"
 
@@ -105,23 +107,6 @@ namespace DO { namespace Sara {
 } /* namespace DO */
 
 
-namespace {
-
-  static DO::Sara::Timer timer;
-
-  void tic()
-  {
-    timer.restart();
-  }
-
-  void toc(const char *what)
-  {
-    auto time = timer.elapsedMs();
-    std::cout << "[" << what << "] Elapsed time = " << time << " ms" << std::endl;
-  }
-}
-
-
 namespace sara = DO::Sara;
 namespace shakti = DO::Shakti;
 
@@ -145,6 +130,9 @@ GRAPHICS_MAIN()
   auto in_frame = sara::Image<float>{};
   auto out_frame = sara::Image<float>{};
 
+  const auto sigma = float{ 2.f };
+  auto apply_gaussian_filter = shakti::GaussianFilter{ sigma };
+
   video_stream.bind_frame_rows(video_frame);
 
   int frame = 0;
@@ -152,22 +140,20 @@ GRAPHICS_MAIN()
   {
     video_stream.read(video_frame, false);
 
-    tic();
+    shakti::tic();
     in_frame = video_frame.convert<float>();
     out_frame.resize(in_frame.sizes());
-    toc("Color conversion");
+    shakti::toc("Color conversion");
 
-    tic();
-    shakti::gradient(out_frame.data(), in_frame.data(), in_frame.sizes().data());
-    //out_frame = in_frame.compute<sara::Gradient>().compute<sara::SquaredNorm>();
-    //out_frame.array() = out_frame.array().sqrt();
-    toc("Gradient");
+    shakti::tic();
+    apply_gaussian_filter(out_frame.data(), in_frame.data(), in_frame.sizes().data());
+    shakti::toc("GPU Gaussian");
 
-    tic();
+    shakti::tic();
     if (!sara::active_window())
       sara::create_window(video_frame.sizes());
     sara::display(out_frame);
-    toc("Display");
+    shakti::toc("Display");
 
     ++frame;
   }

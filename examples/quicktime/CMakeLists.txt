@@ -14,5 +14,6 @@ add_executable(quicktime_read_example quicktime_read_example.cpp)
 target_link_libraries(quicktime_read_example
   ${LIBQUICKTIME_LIBRARY}
   ${DO_Sara_LIBRARIES}
+  DO_Shakti_Utilities
   image_processing_test_CUDA_AUX
 )

@@ -1,2 +1,5 @@
 add_subdirectory(image_processing)
-add_subdirectory(quicktime)
+
+if (NOT WIN32)
+  add_subdirectory(quicktime)
+endif ()

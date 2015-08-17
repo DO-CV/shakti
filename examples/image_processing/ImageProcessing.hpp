@@ -7,30 +7,37 @@
 namespace DO { namespace Shakti {
 
   texture<float, 2> in_texture;
-  texture<float, 2> out_texture;
+
+  __constant__ float convolution_kernel[1024];
+  __constant__ int convolution_kernel_size;
 
 
   template <typename T>
   __global__
-  void gradient(T *dst, int size)
+  void apply_column_based_convolution(T *dst)
   {
     const int i{ offset<2>() };
     const Vector2i p{ coords<2>() };
-    if (i >= size)
-      return;
 
-    auto u_x = tex2D(in_texture, p(0)+1, p(1)) - tex2D(in_texture, p(0)-1, p(1));
-    auto u_y = tex2D(in_texture, p(0), p(1)+1) - tex2D(in_texture, p(0), p(1)-1);
-    dst[i] = sqrt(u_x*u_x + u_y*u_y);
+    auto convolved_value = T{ 0 };
+    auto kernel_radius = convolution_kernel_size / 2;
+    for (int i = 0; i< convolution_kernel_size; ++i)
+      convolved_value += tex2D(in_texture, p(0) - kernel_radius + i, p(1)) * convolution_kernel[i];
+    dst[i] = convolved_value;
   }
 
-  template <typename T, int N>
+  template <typename T>
   __global__
-  void laplacian(const T *src, T *dst, int size)
+  void apply_row_based_convolution(T *dst)
   {
-    int i = DO::Shakti::offset<N>();
+    const int i{ offset<2>() };
+    const Vector2i p{ coords<2>() };
 
-    dst[i] = -2 * N*src[i];
+    auto convolved_value = T{ 0 };
+    auto kernel_radius = convolution_kernel_size / 2;
+    for (int i = 0; i< convolution_kernel_size; ++i)
+      convolved_value += tex2D(in_texture, p(0), p(1) - kernel_radius + i) * convolution_kernel[i];
+    dst[i] = convolved_value;
   }
 
 } /* namespace Shakti */
