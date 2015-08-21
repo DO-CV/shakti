@@ -40,9 +40,18 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline Matrix(const T *data)
+    {
+#pragma unroll
+      for (int i = 0; i < M*N; ++i)
+        _data[i] = data[i];
+    }
+
+    __host__ __device__
     inline static Matrix Zero()
     {
       Matrix zero;
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         zero._data[i] = 0;
       return zero;
@@ -52,6 +61,7 @@ namespace DO { namespace Shakti {
     inline static Matrix Ones()
     {
       Matrix ones;
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         ones._data[i] = T(1);
       return ones;
@@ -67,6 +77,7 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline bool operator==(const Matrix& other) const
     {
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         if (_data[i] != other._data[i])
           return false;
@@ -80,6 +91,48 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline const T& operator[](int i) const
+    {
+      return _data[i];
+    }
+
+    __host__ __device__
+    inline const T& x() const
+    {
+      static_assert(
+        M == 1 || N == 1,
+        "The matrix is not a vector!");
+      return _data[0];
+    }
+
+    __host__ __device__
+    inline const T& y() const
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 2,
+        "The matrix must a Vector of dimension >= 2!");
+      return _data[1];
+    }
+
+    __host__ __device__
+    inline const T& z() const
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 3,
+        "The matrix must a Vector of dimension >= 3!");
+      return _data[2];
+    }
+
+    __host__ __device__
+    inline const T& w() const
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 4,
+        "The matrix must a Vector of dimension >= 4!");
+      return _data[3];
+    }
+
+    __host__ __device__
     inline const T& operator()(int i) const
     {
       return _data[i];
@@ -89,6 +142,48 @@ namespace DO { namespace Shakti {
     inline const T& operator()(int i, int j) const
     {
       return _data[i*N+j];
+    }
+
+    __host__ __device__
+    inline T& operator[](int i)
+    {
+      return _data[i];
+    }
+
+    __host__ __device__
+    inline T& x()
+    {
+      static_assert(
+        M == 1 || N == 1,
+        "The matrix is not a vector!");
+      return _data[0];
+    }
+
+    __host__ __device__
+    inline T& y()
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 2,
+        "The matrix must a Vector of dimension >= 2!");
+      return _data[1];
+    }
+
+    __host__ __device__
+    inline T& z()
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 3,
+        "The matrix must a Vector of dimension >= 3!");
+      return _data[2];
+    }
+
+    __host__ __device__
+    inline T& w()
+    {
+      static_assert(
+        (M == 1 || N == 1) && M*N >= 4,
+        "The matrix must a Vector of dimension >= 4!");
+      return _data[3];
     }
 
     __host__ __device__
@@ -118,6 +213,7 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix& operator+=(const Matrix& other)
     {
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         _data[i] += other._data[i];
       return *this;
@@ -126,6 +222,7 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix& operator-=(const Matrix& other)
     {
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         _data[i] -= other._data[i];
       return *this;
@@ -141,9 +238,16 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix& operator*=(const T& other)
     {
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         _data[i] *= other;
       return *this;
+    }
+
+    __host__ __device__
+    inline Matrix& operator/=(const T& other)
+    {
+      return this->operator*=(T(1) / other);
     }
 
     __host__ __device__
@@ -163,11 +267,14 @@ namespace DO { namespace Shakti {
     inline Matrix<T, M, O> operator*(const Matrix<T, N, O>& other) const
     {
       Matrix<T, M, O> res;
+#pragma unroll
       for (int i = 0; i < M; ++i)
       {
+#pragma unroll
         for (int j = 0; j < O; ++j)
         {
           T res(0);
+#pragma unroll
           for (int k = 0; k < N; ++k)
             res += (*this)(i, k) * other(k, j);
         }
@@ -181,11 +288,14 @@ namespace DO { namespace Shakti {
       static_assert(M == N, "Matrices must be square!");
 
       Matrix res;
+#pragma unroll
       for (int i = 0; i < M; ++i)
       {
+#pragma unroll
         for (int j = 0; j < N; ++j)
         {
           T res(0);
+#pragma unroll
           for (int k = 0; k < N; ++k)
             res += (*this)(i, k) * other(k, j);
         }
@@ -197,6 +307,7 @@ namespace DO { namespace Shakti {
     inline Matrix operator*(const T& other) const
     {
       Matrix res;
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
           res._data[i] = _data[i] * other;
       return res ;
@@ -212,15 +323,43 @@ namespace DO { namespace Shakti {
     inline T dot(const Matrix& other) const
     {
       T res{ 0 };
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         res += _data[i] * other._data[i];
       return res;
+    }
+
+    __host__ __device__
+    inline T squared_norm() const
+    {
+      T res{ 0 };
+#pragma unroll
+      for (int i = 0; i < M*N; ++i)
+      {
+        const T a_i{ _data[i] };
+        res += a_i * a_i;
+      }
+      return res;
+    }
+
+    __host__ __device__
+    inline T norm() const
+    {
+      return sqrt(squared_norm());
+    }
+
+    __host__ __device__
+    inline Matrix& normalize()
+    {
+      *this /= norm();
+      return *this;
     }
 
   protected:
     __host__ __device__
     void copy(const Matrix& other)
     {
+#pragma unroll
       for (int i = 0; i < M*N; ++i)
         _data[i] = other._data[i];
     }

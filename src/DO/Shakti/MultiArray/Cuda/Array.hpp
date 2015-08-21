@@ -6,6 +6,28 @@
 namespace DO { namespace Shakti { namespace Cuda {
 
   template <typename T>
+  struct ChannelFormatDescriptor
+  {
+    static inline cudaChannelFormatDesc type()
+    {
+      return cudaCreateChannelDesc<T>();
+    }
+  };
+
+  template <>
+  struct ChannelFormatDescriptor<Vector2f>
+  {
+    static inline cudaChannelFormatDesc type()
+    {
+      cudaChannelFormatDesc format = {
+        32, 32, 0, 0, cudaChannelFormatKindFloat
+      };
+      return format;
+    }
+  };
+
+
+  template <typename T>
   class Array
   {
     using self_type = Array;
@@ -15,8 +37,9 @@ namespace DO { namespace Shakti { namespace Cuda {
 
     inline
     Array(const Vector2i& sizes)
+      : _sizes{ sizes }
     {
-      cudaChannelFormatDesc channel_descriptor = cudaCreateChannelDesc<T>();
+      auto channel_descriptor = ChannelFormatDescriptor<T>::type();
       CHECK_CUDA_RUNTIME_ERROR(cudaMallocArray(
         &_array, &channel_descriptor, sizes(0), sizes(1)));
     }
@@ -42,13 +65,21 @@ namespace DO { namespace Shakti { namespace Cuda {
         _array, 0, 0, data, sizes(0)*sizes(1)*sizeof(T), kind));
     }
 
+    inline
     operator cudaArray *() const
     {
       return _array;
     }
 
+    inline
+    const Vector2i& sizes() const
+    {
+      return _sizes;
+    }
+
   protected:
     cudaArray *_array = nullptr;
+    Vector2i _sizes = Vector2i::Zero();
   };
 
 } /* namespace Cuda */

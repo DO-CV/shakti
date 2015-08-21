@@ -1,2 +1,3 @@
+add_subdirectory(ImageProcessing)
 add_subdirectory(MultiArray)
 add_subdirectory(Utilities)

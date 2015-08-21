@@ -42,4 +42,4 @@ include_directories(
 add_subdirectory(examples)
 add_subdirectory(src)
 #add_subdirectory(test)
-#add_subdirectory(third-party)
+add_subdirectory(third_party)
