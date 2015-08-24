@@ -1,13 +1,3 @@
-macro (shakti_add_library example)
-  cuda_add_library(${example} ${example}.cu)
-  source_group("CUDA Source Files" REGULAR_EXPRESSION ".*\\.cu$")
-  set_target_properties(${example} PROPERTIES
-                        COMPILE_FLAGS ${DO_DEFINITIONS})
-  target_link_libraries(${example} ${DO_LIBRARIES})
-  set_property(TARGET ${example} PROPERTY FOLDER "CUDA Examples")
-endmacro ()
-
-
 function (shakti_add_example)
    # Get the test executable name.
    list(GET ARGN 0 EXAMPLE_NAME)
@@ -34,7 +24,7 @@ function (shakti_add_example)
 
    # Add the C++ test executable.
    add_executable(${EXAMPLE_NAME} ${CPP_SOURCE_FILES})
-   set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "CUDA Examples")
+   set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "DO Shakti Examples")
    set_target_properties(
      ${EXAMPLE_NAME} PROPERTIES
      COMPILE_FLAGS ${DO_DEFINITIONS}

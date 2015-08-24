@@ -8,4 +8,4 @@ target_link_libraries(DO_Shakti_Utilities
   ${CUDA_CUDART_LIBRARY}
   ${DO_Sara_LIBRARIES}
 )
-set_property(TARGET DO_Shakti_Utilities PROPERTY FOLDER "Shakti Libraries")
+set_property(TARGET DO_Shakti_Utilities PROPERTY FOLDER "DO Shakti Libraries")

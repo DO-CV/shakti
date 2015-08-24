@@ -130,8 +130,11 @@ namespace DO { namespace Shakti {
       }
     }
 
-    h.normalize();
-    h *= 512.f;
+    if (h.norm() > 1e-6f)
+    {
+      h.normalize();
+      h *= 512.f;
+    }
     
 #pragma unroll
     for (int i = 0; i < Dim; ++i)
@@ -190,8 +193,6 @@ namespace DO { namespace Shakti {
   DenseSiftComputer::operator()(float *out, const float *in,
                                 const int *sizes) const
   {
-    tic();
-
     // Compute gradients in polar coordinates.
     Cuda::Array<float> in_cuda_array{ in, sizes };
     MultiArray<Vector2f, 2> gradients_polar_coords{
@@ -206,8 +207,6 @@ namespace DO { namespace Shakti {
 
     auto sifts = this->operator()(in_gradients_cuda_array);
     sifts.copy_to_host(reinterpret_cast<Vector<float, 128> *>(out));
-
-    toc("Dense SIFT");
   }
 
 } /* namespace Shakti */
