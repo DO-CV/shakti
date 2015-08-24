@@ -53,7 +53,9 @@ namespace DO { namespace Shakti {
 
     template<typename U>
     __host__ __device__
-    inline PinnedAllocator(const PinnedAllocator<U>&) = default;
+    inline PinnedAllocator(const PinnedAllocator<U>&)
+    {
+    }
 
     __host__ __device__
     inline pointer address(reference r)
