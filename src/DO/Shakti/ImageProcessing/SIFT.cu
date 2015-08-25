@@ -1,8 +1,19 @@
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
 #include <math_constants.h>
 
 #include <DO/Shakti/ImageProcessing.hpp>
-#include <DO/Shakti/ImageProcessing/Cuda/Globals.hpp>
 #include <DO/Shakti/ImageProcessing/Differential.hpp>
+#include <DO/Shakti/ImageProcessing/Kernels/Globals.hpp>
 
 #include <DO/Shakti/MultiArray.hpp>
 #include <DO/Shakti/MultiArray/Offset.hpp>
@@ -146,7 +157,7 @@ namespace DO { namespace Shakti {
 
   template <int N, int O>
   MultiArray<Vector<float, N*N*O>, 2>
-  compute_dense_upright_sift_descriptor(const Cuda::Array<Vector2f>& gradients)
+  compute_dense_upright_sift_descriptor(const TextureArray<Vector2f>& gradients)
   {
     const auto& sizes = gradients.sizes();
     const dim3 block_size{ 16, 16 };
@@ -156,9 +167,9 @@ namespace DO { namespace Shakti {
     };
 
     MultiArray<Vector<float, N*N*O>, 2> sifts{ gradients.sizes() };
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float2_texture, gradients));
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float2_texture, gradients));
     compute_dense_upright_sift_descriptor<N, O><<<grid_size, block_size>>>(sifts.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float2_texture));
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float2_texture));
     return sifts;
   }
 
@@ -175,16 +186,16 @@ namespace DO { namespace Shakti {
     cout << _max_bin_value << endl;
     cout << _sigma << endl;
 
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       bin_scale_unit_length, &_bin_scale_unit_length, sizeof(float)));
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       max_bin_value, &_max_bin_value, sizeof(float)));
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       sigma, &_sigma, sizeof(float)));
   }
 
   MultiArray<Vector<float, 128>, 2>
-  DenseSiftComputer::operator()(const Cuda::Array<Vector2f>& gradients) const
+  DenseSiftComputer::operator()(const TextureArray<Vector2f>& gradients) const
   {
     return Shakti::compute_dense_upright_sift_descriptor<4, 8>(gradients);
   }
@@ -194,13 +205,13 @@ namespace DO { namespace Shakti {
                                 const int *sizes) const
   {
     // Compute gradients in polar coordinates.
-    Cuda::Array<float> in_cuda_array{ in, sizes };
+    TextureArray<float> in_cuda_array{ in, sizes, sizes[0] * sizeof(float) };
     MultiArray<Vector2f, 2> gradients_polar_coords{
       gradient_polar_coords(in_cuda_array)
     };
 
     // Now compute SIFT descriptors densely from the gradients.
-    Cuda::Array<Vector2f> in_gradients_cuda_array{
+    TextureArray<Vector2f> in_gradients_cuda_array{
       gradients_polar_coords.data(), gradients_polar_coords.sizes(),
       cudaMemcpyDeviceToDevice
     };

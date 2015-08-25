@@ -10,3 +10,4 @@ if (WIN32 AND DO_USE_VLD)
 endif ()
 
 add_subdirectory(ImageProcessing)
+add_subdirectory(MultiArray)

@@ -16,8 +16,8 @@ namespace DO { namespace Shakti {
 
   Timer::~Timer()
   {
-    CHECK_CUDA_RUNTIME_ERROR(cudaEventDestroy(_start));
-    CHECK_CUDA_RUNTIME_ERROR(cudaEventDestroy(_stop));
+    SHAKTI_SAFE_CUDA_CALL(cudaEventDestroy(_start));
+    SHAKTI_SAFE_CUDA_CALL(cudaEventDestroy(_stop));
   }
 
   void Timer::restart()
@@ -28,9 +28,9 @@ namespace DO { namespace Shakti {
   float Timer::elapsed_ms()
   {
     float ms;
-    CHECK_CUDA_RUNTIME_ERROR(cudaEventRecord(_stop));
-    CHECK_CUDA_RUNTIME_ERROR(cudaEventSynchronize(_stop));
-    CHECK_CUDA_RUNTIME_ERROR(cudaEventElapsedTime(&ms, _start, _stop));
+    SHAKTI_SAFE_CUDA_CALL(cudaEventRecord(_stop));
+    SHAKTI_SAFE_CUDA_CALL(cudaEventSynchronize(_stop));
+    SHAKTI_SAFE_CUDA_CALL(cudaEventElapsedTime(&ms, _start, _stop));
     return ms;
   }
 

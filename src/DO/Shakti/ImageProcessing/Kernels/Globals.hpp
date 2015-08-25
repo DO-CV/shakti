@@ -9,17 +9,20 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 // ========================================================================== //
 
-#ifndef DO_SHAKTI_MULTIARRAY_HPP
-#define DO_SHAKTI_MULTIARRAY_HPP
+#ifndef DO_SHAKTI_IMAGEPROCESSING_CUDA_GLOBALS_HPP
+#define DO_SHAKTI_IMAGEPROCESSING_CUDA_GLOBALS_HPP
 
 
-#include <DO/Shakti/MultiArray/Grid.hpp>
-#include <DO/Shakti/MultiArray/Matrix.hpp>
-#include <DO/Shakti/MultiArray/MultiArray.hpp>
-#include <DO/Shakti/MultiArray/MultiArrayView.hpp>
-#include <DO/Shakti/MultiArray/PinnedAllocator.hpp>
-#include <DO/Shakti/MultiArray/Strides.hpp>
-#include <DO/Shakti/MultiArray/TextureArray.hpp>
+namespace DO { namespace Shakti {
+
+  texture<float, 2> in_float_texture;
+  texture<float2, 2> in_float2_texture;
+
+  __constant__ float convolution_kernel[1024];
+  __constant__ int convolution_kernel_size;
+
+} /* namespace Shakti */
+} /* namespace DO */
 
 
-#endif /* DO_SHAKTI_MULTIARRAY_HPP */
+#endif /* DO_SHAKTI_IMAGEPROCESSING_CUDA_GLOBALS_HPP */

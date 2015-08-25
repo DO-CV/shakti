@@ -225,17 +225,17 @@ namespace DO { namespace Shakti {
 
   void Device::make_current_device()
   {
-    CHECK_CUDA_RUNTIME_ERROR(cudaSetDevice(id));
+    SHAKTI_SAFE_CUDA_CALL(cudaSetDevice(id));
   }
 
   void Device::make_current_gl_device()
   {
-    CHECK_CUDA_RUNTIME_ERROR(cudaGLSetGLDevice(id));
+    SHAKTI_SAFE_CUDA_CALL(cudaGLSetGLDevice(id));
   }
 
   void Device::reset()
   {
-    CHECK_CUDA_RUNTIME_ERROR(cudaDeviceReset());
+    SHAKTI_SAFE_CUDA_CALL(cudaDeviceReset());
   }
 
   std::ostream& operator<<(std::ostream& os, const Device& info)

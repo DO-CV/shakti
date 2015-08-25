@@ -9,36 +9,31 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 // ========================================================================== //
 
-#ifndef DO_SHAKTI_UTILITIES_TIMER_HPP
-#define DO_SHAKTI_UTILITIES_TIMER_HPP
+#ifndef DO_SHAKTI_MULTIARRAY_GRID_HPP
+#define DO_SHAKTI_MULTIARRAY_GRID_HPP
 
-#include <driver_types.h>
+#include <DO/Shakti/MultiArray/MultiArrayView.hpp>
 
 
 namespace DO { namespace Shakti {
 
-  class Timer
+  inline dim3 default_block_size_2d()
   {
-  public:
-    Timer();
+    return dim3{ 16, 16 };
+  }
 
-    ~Timer();
-
-    void restart();
-
-    float elapsed_ms();
-
-  private:
-    cudaEvent_t _start;
-    cudaEvent_t _stop;
-  };
-
-  void tic();
-
-  void toc(const char *what);
+  template <typename T, int N, typename Strides>
+  inline dim3 default_grid_size_2d(const MultiArrayView<T, N, Strides>& data)
+  {
+    const auto block_size = default_block_size_2d();
+    return dim3{
+      (data.padded_width() + block_size.x - 1) / block_size.x,
+      (data.height() + block_size.y - 1) / block_size.y,
+    };
+  }
 
 } /* namespace Shakti */
 } /* namespace DO */
 
 
-#endif /* DO_SHAKTI_UTILITIES_TIMER_HPP */
+#endif /* DO_SHAKTI_MULTIARRAY_GRID_HPP */

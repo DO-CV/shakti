@@ -1,3 +1,14 @@
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
 #ifndef DO_SHAKTI_IMAGEPROCESSING_SIFT_HPP
 #define DO_SHAKTI_IMAGEPROCESSING_SIFT_HPP
 
@@ -12,7 +23,7 @@ namespace DO { namespace Shakti {
     DenseSiftComputer();
 
     MultiArray<Vector<float, 128>, 2>
-    operator()(const Cuda::Array<Vector2f>& gradients) const;
+    operator()(const TextureArray<Vector2f>& gradients) const;
 
     void operator()(float *out, const float *in, const int *sizes) const;
 

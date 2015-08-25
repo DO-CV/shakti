@@ -1,9 +1,21 @@
-#pragma once
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
+#ifndef DO_SHAKTI_MULTIARRAY_MULTIARRAYVIEW_HPP
+#define DO_SHAKTI_MULTIARRAY_MULTIARRAYVIEW_HPP
 
 #include <DO/Shakti/Utilities/ErrorCheck.hpp>
 
-#include "Matrix.hpp"
-#include "Strides.hpp"
+#include <DO/Shakti/MultiArray/Matrix.hpp>
+#include <DO/Shakti/MultiArray/Strides.hpp>
 
 
 namespace DO { namespace Shakti {
@@ -51,53 +63,83 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline MultiArrayView() = default;
 
+    //! @{
     //! \brief Constructor that wraps plain data with its known sizes.
     __host__ __device__
     inline MultiArrayView(value_type *data, const vector_type& sizes)
       : _data{ data }
       , _sizes{ sizes }
       , _strides{ strides_type::compute(sizes) }
+      , _pitch{ sizes[0] * sizeof(T) }
     {
     }
 
+    __host__ __device__
+    inline MultiArrayView(value_type *data, const vector_type& sizes,
+                          size_type pitch)
+      : _data{ data }
+      , _sizes{ sizes }
+      , _strides{ strides_type::compute(sizes) }
+      , _pitch{ pitch }
+    {
+      if (_sizes[0] * sizeof(T) > pitch)
+        throw std::runtime_error{ "_sizes[0]*sizeof(T) > pitch" };
+    }
+    //! @}
+
     //! \brief Return the size vector of the MultiArray object.
     __host__ __device__
-    const vector_type& sizes() const
+    inline const vector_type& sizes() const
     {
       return _sizes;
     }
 
+    //! \brief Return the pitch size in bytes of the MultiArray object.
+    __host__ __device__
+    inline size_type pitch() const
+    {
+      return _pitch;
+    }
+
+    //! \brief Return the padded width of the MultiArray object.
+    //! This is useful when computing the grid.
+    __host__ __device__
+    inline int padded_width() const
+    {
+      return int(pitch() / sizeof(T));
+    }
+
     //! \brief Return the number of elements in the internal data array.
     __host__ __device__
-    size_type size() const
+    inline size_type size() const
     {
       return compute_size(_sizes);
     }
 
     //! \brief Return the i-th sizes of the multi-array.
     __host__ __device__
-    int size(int i) const
+    inline int size(int i) const
     {
       return _sizes(i);
     }
 
     //! \brief Return the number of rows.
     __host__ __device__
-    int rows() const
+    inline int width() const
     {
       return _sizes(0);
     }
 
     //! \brief Return the number of columns.
     __host__ __device__
-    int cols() const
+    inline int height() const
     {
       return _sizes(1);
     }
 
     //! \brief Return the depth size.
     __host__ __device__
-    int depth() const
+    inline int depth() const
     {
       return _sizes(2);
     }
@@ -133,7 +175,7 @@ namespace DO { namespace Shakti {
 
     //! \brief Return true/false whether the array is empty.
     __host__ __device__
-      inline bool empty() const
+    inline bool empty() const
     {
       return _data == nullptr;
     }
@@ -203,11 +245,37 @@ namespace DO { namespace Shakti {
     //! \brief Copy the ND-array device array to host array.
     //! You must allocate the array with the appropriate size.
     __host__
-    inline void copy_to_host(T *host_array) const
+    inline void copy_to_host(T *host_data) const
     {
-      CHECK_CUDA_RUNTIME_ERROR(
-        cudaMemcpy(host_array, _data, sizeof(T) * size(),
-                   cudaMemcpyDeviceToHost));
+      if (N == 2)
+      {
+        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy2D(
+          host_data, _sizes[0] * sizeof(T), _data, _pitch, _sizes[0] * sizeof(T), _sizes[1],
+          cudaMemcpyDeviceToHost));
+      }
+      else if (N == 3)
+      {
+        cudaMemcpy3DParms params = { 0 };
+
+        params.srcPtr.ptr = reinterpret_cast<void *>(_data);
+        params.srcPtr.pitch = _pitch;
+        params.srcPtr.xsize = _sizes[0];
+        params.srcPtr.ysize = _sizes[1];
+
+        params.dstPtr.ptr = host_data;
+        params.dstPtr.pitch = _sizes[0] * sizeof(T);
+        params.dstPtr.xsize = _sizes[0];
+        params.dstPtr.ysize = _sizes[1];
+
+        params.kind = cudaMemcpyDeviceToHost;
+        params.extent = make_cudaExtent(_sizes[0], _sizes[1], _sizes[2]);
+
+        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy3D(&params));
+      }
+      else
+        SHAKTI_SAFE_CUDA_CALL(
+          cudaMemcpy(host_data, _data, sizeof(T) * size(),
+                     cudaMemcpyDeviceToHost));
     }
 
     //! \brief Copy the ND-array content to a std::vector object.
@@ -241,10 +309,15 @@ namespace DO { namespace Shakti {
     //! \brief Internal storage array.
     value_type *_data{ nullptr };
     //! \brief Vector of size along each dimension.
-    vector_type _sizes{ vector_type{} };
+    vector_type _sizes{ vector_type::Zero() };
     //! \brief Vector of stride for each dimension.
-    vector_type _strides{ vector_type{} };
+    vector_type _strides{ vector_type::Zero() };
+    //! \brief Pitch size in number of bytes.
+    size_type _pitch{ 0 };
   };
 
 } /* namespace Shakti */
 } /* namespace DO */
+
+
+#endif /* DO_SHAKTI_MULTIARRAY_MULTIARRAYVIEW_HPP */

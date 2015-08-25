@@ -1,8 +1,18 @@
-#pragma once
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
 
-#include <cuda.h>
+#ifndef DO_SHAKTI_MULTIARRAY_OFFSET_HPP
+#define DO_SHAKTI_MULTIARRAY_OFFSET_HPP
 
-#include "Matrix.hpp"
+#include <DO/Shakti/MultiArray/Matrix.hpp>
 
 
 namespace DO { namespace Shakti {
@@ -13,7 +23,7 @@ namespace DO { namespace Shakti {
   __device__
   inline Vector<int, N> coords()
   {
-    return -1;
+    return Vector<int, N>{};
   }
 
   template <>
@@ -44,7 +54,7 @@ namespace DO { namespace Shakti {
   __device__
   inline Vector<int, N> grid_strides()
   {
-    return Vector<int, N>();
+    return Vector<int, N>{};
   }
 
   template <>
@@ -67,12 +77,19 @@ namespace DO { namespace Shakti {
   //! @}
 
   //! @{
-  //! \brief Return the 1D-offset of the corresponding ND-coordinates.
+  //! \brief Return the index of the corresponding ND-coordinates.
   template <int N>
   __device__
   inline int offset()
   {
     return -1;
+  }
+
+  template <>
+  __device__
+  inline int offset<1>()
+  {
+    return blockDim.x * blockIdx.x + threadIdx.x;
   }
 
   template <>
@@ -92,3 +109,6 @@ namespace DO { namespace Shakti {
 
 } /* namespace Shakti */
 } /* namespace DO */
+
+
+#endif /* DO_SHAKTI_MULTIARRAY_OFFSET_HPP */

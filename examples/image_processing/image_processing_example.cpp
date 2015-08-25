@@ -1,3 +1,14 @@
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
 #include <DO/Sara/Graphics.hpp>
 #include <DO/Sara/Geometry/Tools/Utilities.hpp>
 #include <DO/Sara/ImageIO.hpp>
@@ -5,7 +16,7 @@
 #include <DO/Sara/VideoIO/VideoStream.hpp>
 
 #include <DO/Shakti/ImageProcessing.hpp>
-#include <DO/Shakti/MultiArray/Cuda/Array.hpp>
+#include <DO/Shakti/MultiArray.hpp>
 #include <DO/Shakti/Utilities/DeviceInfo.hpp>
 #include <DO/Shakti/Utilities/Timer.hpp>
 
@@ -120,9 +131,9 @@ GRAPHICS_MAIN()
     auto video_frame_index = int{ 0 };
     auto video_frame = Image<Rgb8>{};
 
-    auto in_frame = Image<float, 2>{};
+    auto in_frame = Image<float>{};
     auto out_frame = Image<float>{};
-    auto apply_gaussian_filter = shakti::GaussianFilter{ 1.6f };
+    auto apply_gaussian_filter = shakti::GaussianFilter{ 3.f };
 
     auto sifts = Image<Vector128f>{};
     auto sift_computer = shakti::DenseSiftComputer{};
@@ -138,21 +149,21 @@ GRAPHICS_MAIN()
 
       shakti::tic();
       apply_gaussian_filter(out_frame.data(), in_frame.data(), in_frame.sizes().data());
-      shakti::toc("Gaussian filter");
+      shakti::toc("GPU gaussian filter");
 
       //shakti::tic();
       //shakti::compute_gradient_squared_norms(out_frame.data(), out_frame.data(), in_frame.sizes().data());
       //shakti::toc("Gradient norms");
 
-      shakti::tic();
-      sifts.resize(in_frame.sizes());
-      sift_computer(
-        reinterpret_cast<float *>(sifts.data()), out_frame.data(),
-        out_frame.sizes().data());
-      shakti::toc("Dense SIFT");
+      //shakti::tic();
+      //sifts.resize(in_frame.sizes());
+      //sift_computer(
+      //  reinterpret_cast<float *>(sifts.data()), out_frame.data(),
+      //  out_frame.sizes().data());
+      //shakti::toc("Dense SIFT");
 
       display(out_frame);
-      draw_sift(sifts(160, 120), 160, 120, 10.f);
+      //draw_sift(sifts(160, 120), 160, 120, 10.f);
 
       //get_key();
 

@@ -11,5 +11,7 @@ file(GLOB test_imageprocessing_SOURCE_FILES FILES test_*.cpp)
 
 foreach (file ${test_imageprocessing_SOURCE_FILES})
   get_filename_component(filename "${file}" NAME_WE)
-  do_add_test(${filename} ${file} "${DO_Sara_LIBRARIES}" "ImageProcessing")
+  do_add_test(${filename} ${file}
+    "${DO_Sara_LIBRARIES};DO_Shakti_ImageProcessing;DO_Shakti_Utilities;DO_Shakti_MultiArray"
+    "ImageProcessing")
 endforeach ()

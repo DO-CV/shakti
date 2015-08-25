@@ -9,17 +9,30 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 // ========================================================================== //
 
-#ifndef DO_SHAKTI_MULTIARRAY_HPP
-#define DO_SHAKTI_MULTIARRAY_HPP
+#include <gtest/gtest.h>
+
+#include <DO/Shakti/MultiArray.hpp>
 
 
-#include <DO/Shakti/MultiArray/Grid.hpp>
-#include <DO/Shakti/MultiArray/Matrix.hpp>
-#include <DO/Shakti/MultiArray/MultiArray.hpp>
-#include <DO/Shakti/MultiArray/MultiArrayView.hpp>
-#include <DO/Shakti/MultiArray/PinnedAllocator.hpp>
-#include <DO/Shakti/MultiArray/Strides.hpp>
-#include <DO/Shakti/MultiArray/TextureArray.hpp>
+using namespace std;
+using namespace DO::Shakti;
 
 
-#endif /* DO_SHAKTI_MULTIARRAY_HPP */
+TEST(TestMatrix, test_constructors)
+{
+  Vector2i p{ 2, 1 };
+  EXPECT_EQ(p.x(), 2);
+  EXPECT_EQ(p.y(), 1);
+
+  const int sizes[] = { 1, 3 };
+  p = sizes;
+  EXPECT_EQ(p.x(), sizes[0]);
+  EXPECT_EQ(p.y(), sizes[1]);
+}
+
+
+int main(int argc, char **argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

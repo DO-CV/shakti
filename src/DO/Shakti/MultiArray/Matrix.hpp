@@ -1,4 +1,16 @@
-#pragma once
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
+#ifndef DO_SHAKTI_MULTIARRAY_MATRIX_HPP
+#define DO_SHAKTI_MULTIARRAY_MATRIX_HPP
 
 #include <iostream>
 #include <stdexcept>
@@ -97,6 +109,12 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline const T * data() const
+    {
+      return _data;
+    }
+
+    __host__ __device__
     inline const T& x() const
     {
       static_assert(
@@ -148,6 +166,12 @@ namespace DO { namespace Shakti {
     inline T& operator[](int i)
     {
       return _data[i];
+    }
+
+    __host__ __device__
+    inline T * data()
+    {
+      return _data;
     }
 
     __host__ __device__
@@ -404,3 +428,6 @@ namespace DO { namespace Shakti {
 
 } /* namespace Shakti */
 } /* namespace DO */
+
+
+#endif /* DO_SHAKTI_MULTIARRAY_MATRIX_HPP */

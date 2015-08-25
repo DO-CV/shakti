@@ -1,8 +1,20 @@
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
 #include <algorithm>
 
-#include <DO/Shakti/Utilities.hpp>
 #include <DO/Shakti/ImageProcessing.hpp>
-#include <DO/Shakti/ImageProcessing/Cuda/Convolution.hpp>
+#include <DO/Shakti/ImageProcessing/Kernels/Convolution.hpp>
+
+#include <DO/Shakti/Utilities.hpp>
 
 
 namespace DO { namespace Shakti {
@@ -11,56 +23,42 @@ namespace DO { namespace Shakti {
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes)
   {
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
-    tic();
-    Cuda::Array<float> in_array{ in, sizes };
+    TextureArray<float> in_array{ in, sizes, sizes[0] * sizeof(float) };
     MultiArray<float, 2> out_array{ sizes };
-    toc("Host to device transfer");
 
-    tic();
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in_array));
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out_array);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
     cudaMemcpyToSymbol(convolution_kernel, kernel, sizeof(float) * kernel_size);
     cudaMemcpyToSymbol(convolution_kernel_size, &kernel_size, sizeof(int));
-    apply_row_based_convolution<<<grid_size, block_size>>>(out_array.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
-    toc("Row based convolution");
 
-    tic();
+    apply_row_based_convolution<<<grid_size, block_size>>>(out_array.data());
+
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
+
     out_array.copy_to_host(out);
-    toc("Device to host transfer");
   }
 
   void apply_column_based_convolution(
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes)
   {
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
-    tic();
-    Cuda::Array<float> in_array{ in, sizes };
+    TextureArray<float> in_array{ in, sizes, sizes[0] * sizeof(float) };
     MultiArray<float, 2> out_array{ sizes };
-    toc("Host to device transfer");
 
-    tic();
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in_array));
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(convolution_kernel, kernel, sizeof(float) * kernel_size));
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(convolution_kernel_size, &kernel_size, sizeof(int)));
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out_array);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(convolution_kernel, kernel, sizeof(float) * kernel_size));
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(convolution_kernel_size, &kernel_size, sizeof(int)));
+
     apply_column_based_convolution<<<grid_size, block_size>>>(out_array.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
-    toc("Column based convolution");
 
-    tic();
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
+
     out_array.copy_to_host(out);
-    toc("Device to host transfer");
   }
 
 } /* namespace Shakti */
@@ -87,57 +85,46 @@ namespace DO { namespace Shakti {
     for (auto i = int{ 0 }; i < kernel_size; ++i)
       _kernel[i] /= sum;
 
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       convolution_kernel, _kernel.data(), sizeof(float) * _kernel.size()));
-    CHECK_CUDA_RUNTIME_ERROR(cudaMemcpyToSymbol(
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       convolution_kernel_size, &kernel_size, sizeof(int)));
   }
 
   void GaussianFilter::operator()(float *out, const float *in, const int *sizes) const
   {
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
-    tic();
-    Cuda::Array<float> in_array{ in, { sizes[0], sizes[1] } };
+    TextureArray<float> in_array{ in, { sizes[0], sizes[1] }, sizes[0] * sizeof(float) };
     MultiArray<float, 2> out_array{ { sizes[0], sizes[1] } };
-    toc("Host to device transfer");
 
-    tic();
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out_array);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
     {
-      CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in_array));
       apply_column_based_convolution<<<grid_size, block_size>>>(out_array.data());
-      in_array.copy_from(out_array.data(), out_array.sizes(), cudaMemcpyDeviceToDevice);
+      in_array.copy_from(out_array.data(), out_array.sizes(), out_array.pitch(), cudaMemcpyDeviceToDevice);
       apply_row_based_convolution<<<grid_size, block_size>>>(out_array.data());
-
-      CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
     }
-    toc("Gaussian filter");
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
 
-    tic();
     out_array.copy_to_host(out);
-    toc("Device to host transfer");
   }
 
   MultiArray<float, 2>
-  GaussianFilter::operator()(Cuda::Array<float>& in) const
+  GaussianFilter::operator()(TextureArray<float>& in) const
   {
-    const auto& sizes = in.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
+    MultiArray<float, 2> out{ in.sizes() };
 
-    MultiArray<float, 2> out{ sizes };
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in));
-    apply_column_based_convolution<<<grid_size, block_size>>>(out.data());
-    in.copy_from(out.data(), out.sizes(), cudaMemcpyDeviceToDevice);
-    apply_row_based_convolution<<<grid_size, block_size>>>(out.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
+    {
+      apply_column_based_convolution<<<grid_size, block_size>>>(out.data());
+      in.copy_from(out.data(), out.sizes(), out.pitch(), cudaMemcpyDeviceToDevice);
+      apply_row_based_convolution<<<grid_size, block_size>>>(out.data());
+    }
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
 
     return out;
   }

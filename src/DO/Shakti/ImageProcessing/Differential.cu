@@ -1,74 +1,84 @@
+// ========================================================================== //
+// This file is part of DO-CV, a basic set of libraries in C++ for computer
+// vision.
+//
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License v. 2.0. If a copy of the MPL was not distributed with this file,
+// you can obtain one at http://mozilla.org/MPL/2.0/.
+// ========================================================================== //
+
 #include <DO/Shakti/ImageProcessing.hpp>
-#include <DO/Shakti/ImageProcessing/Cuda/Convolution.hpp>
-#include <DO/Shakti/ImageProcessing/Cuda/Differential.hpp>
+#include <DO/Shakti/ImageProcessing/Kernels/Convolution.hpp>
+#include <DO/Shakti/ImageProcessing/Kernels/Differential.hpp>
 
 #include <DO/Shakti/MultiArray.hpp>
 
 
 namespace DO { namespace Shakti {
 
-  MultiArray<Vector2f, 2> gradient(const Cuda::Array<float>& in)
+  MultiArray<Vector2f, 2> gradient(const TextureArray<float>& in)
   {
-    const auto& sizes = in.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
-    MultiArray<Vector2f, 2> dst{ in.sizes() };
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in));
-    compute_gradients<<<grid_size, block_size>>>(dst.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
-
-    return dst;
-  }
-
-  MultiArray<Vector2f, 2> gradient_polar_coords(const Cuda::Array<float>& in)
-  {
-    const auto& sizes = in.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
     MultiArray<Vector2f, 2> out{ in.sizes() };
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in));
-    compute_gradient_polar_coordinates<<<grid_size, block_size>>>(out.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
+
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
+    apply_gradient_kernel<<<grid_size, block_size>>>(out.data());
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
 
     return out;
   }
 
-  MultiArray<float, 2> gradient_squared_norm(const Cuda::Array<float>& in)
+  MultiArray<Vector2f, 2> gradient_polar_coords(const TextureArray<float>& in)
   {
-    const auto& sizes = in.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
+    MultiArray<Vector2f, 2> out{ in.sizes() };
 
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
+    apply_gradient_polar_coordinates_kernel<<<grid_size, block_size>>>(out.data());
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
+
+    return out;
+  }
+
+  MultiArray<float, 2> gradient_squared_norm(const TextureArray<float>& in)
+  {
     MultiArray<float, 2> out{ in.sizes() };
-    CHECK_CUDA_RUNTIME_ERROR(cudaBindTextureToArray(in_float_texture, in));
-    compute_gradient_squared_norms<<<grid_size, block_size>>>(out.data());
-    CHECK_CUDA_RUNTIME_ERROR(cudaUnbindTexture(in_float_texture));
+
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
+    apply_gradient_squared_norms_kernel<<<grid_size, block_size>>>(out.data());
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
 
     return out;
   }
 
   MultiArray<float, 2> squared_norm(const MultiArray<Vector2f, 2>& in)
   {
-    const auto& sizes = in.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes(0) + block_size.x - 1) / block_size.x,
-      (sizes(1) + block_size.y - 1) / block_size.y
-    };
-
     MultiArray<float, 2> out{ in.sizes() };
-    compute_squared_norms<<<grid_size, block_size>>>(out.data(), in.data());
+
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    apply_squared_norms_kernel<<<grid_size, block_size>>>(out.data(), in.data());
+    return out;
+  }
+
+  MultiArray<float, 2> laplacian(const TextureArray<float>& in)
+  {
+    MultiArray<float, 2> out{ in.sizes() };
+
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(out);
+
+    apply_laplacian_kernel<<<grid_size, block_size>>>(out.data());
     return out;
   }
 
@@ -92,28 +102,25 @@ namespace DO { namespace Shakti {
     apply_row_based_convolution(out, in, kernel, kernel_size, sizes);
   }
 
+  void compute_gradient(Vector2f *out, const float *in, const int *sizes)
+  {
+    TextureArray<float> in_cuda_array{ in, { sizes[0], sizes[1] } };
+    MultiArray<Vector2f, 2> gradients{ gradient(in_cuda_array) };
+    gradients.copy_to_host(out);
+  }
+
   void compute_gradient_squared_norms(float *out, const float *in, const int *sizes)
   {
-    Cuda::Array<float> in_cuda_array{ in, { sizes[0], sizes[1] } };
-
-#ifdef TWO_KERNEL
-    MultiArray<Vector2f, 2> gradients{
-      gradient(in_cuda_array)
-    };
-    MultiArray<float, 2> gradient_squared_norms{
-      squared_norm(gradients)
-    };
-#else
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
+    TextureArray<float> in_cuda_array{ in, { sizes[0], sizes[1] } };
     MultiArray<float, 2> gradient_squared_norms{ gradient_squared_norm(in_cuda_array) };
-#endif
-
     gradient_squared_norms.copy_to_host(out);
+  }
+
+  void compute_laplacian(float *out, const float *in, const int *sizes)
+  {
+    TextureArray<float> in_cuda_array{ in, { sizes[0], sizes[1] } };
+    MultiArray<float, 2> laplacians{ laplacian(in_cuda_array) };
+    laplacians.copy_to_host(out);
   }
 
 } /* namespace Shakti */
