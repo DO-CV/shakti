@@ -68,11 +68,19 @@ void draw_dense_sifts(
   {
     for (int i = 0; i < num_blocks_x; ++i)
     {
-      Point2f a{ float(i) / num_blocks_x * w, float(j) / num_blocks_y * h };
-      Point2f b{ float(i + 1) / num_blocks_x * w, float(j + 1) / num_blocks_y * h };
-      Point2f c{ (a + b) / 2.f };
-      float r = b.y() - c.
-      draw_rect(a.x(), a.y(), b.x() - a.x(), b.y() - a.y(), Green);
+      const Point2f a{
+        float(i) / num_blocks_x * w,
+        float(j) / num_blocks_y * h
+      };
+      const Point2f b{
+        float(i + 1) / num_blocks_x * w,
+        float(j + 1) / num_blocks_y * h
+      };
+      const Point2f c{ (a + b) / 2.f };
+
+      float r = b.y() - c.y();
+
+      draw_rect(a.x(), a.y(), b.x() - a.x(), b.y() - a.y(), Green8);
     }
   }
 }
@@ -126,7 +134,11 @@ GRAPHICS_MAIN()
     devices.front().make_current_device();
 
     VideoStream video_stream{
+#ifdef _WIN32
       "C:/Users/David/Desktop/GitHub/sara/examples/VideoIO/orion_1.mpg"
+#else
+      "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg"
+#endif
     };
     auto video_frame_index = int{ 0 };
     auto video_frame = Image<Rgb8>{};
@@ -148,7 +160,8 @@ GRAPHICS_MAIN()
       out_frame.resize(in_frame.sizes());
 
       shakti::tic();
-      apply_gaussian_filter(out_frame.data(), in_frame.data(), in_frame.sizes().data());
+      apply_gaussian_filter(out_frame.data(), in_frame.data(),
+                            in_frame.sizes().data());
       shakti::toc("GPU gaussian filter");
 
       shakti::tic();
@@ -158,8 +171,9 @@ GRAPHICS_MAIN()
         out_frame.sizes().data());
       shakti::toc("Dense SIFT");
 
-      display(color_rescale(out_frame));
+      display(out_frame);
       draw_sift(sifts(160, 120), 160, 120, 10.f);
+      //draw_sift(sifts(160, 120), 160, 120, 1.6f, 3.f);
 
       ++video_frame_index;
       cout << endl;

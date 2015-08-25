@@ -12,6 +12,8 @@
 #ifndef DO_SHAKTI_MULTIARRAY_TEXTUREARRAY_HPP
 #define DO_SHAKTI_MULTIARRAY_TEXTUREARRAY_HPP
 
+#include <cuda_runtime.h>
+
 #include <DO/Shakti/MultiArray/Matrix.hpp>
 
 
@@ -38,6 +40,41 @@ namespace DO { namespace Shakti {
     }
   };
 
+  template <>
+  struct ChannelFormatDescriptor<Vector3f>
+  {
+    static inline cudaChannelFormatDesc type()
+    {
+      cudaChannelFormatDesc format = {
+        32, 32, 32, 0, cudaChannelFormatKindFloat
+      };
+      return format;
+    }
+  };
+
+  template <>
+  struct ChannelFormatDescriptor<Vector4f>
+  {
+    static inline cudaChannelFormatDesc type()
+    {
+      cudaChannelFormatDesc format = {
+        32, 32, 32, 32, cudaChannelFormatKindFloat
+      };
+      return format;
+    }
+  };
+
+  template <>
+  struct ChannelFormatDescriptor<Matrix2f>
+  {
+    static inline cudaChannelFormatDesc type()
+    {
+      cudaChannelFormatDesc format = {
+        32, 32, 32, 32, cudaChannelFormatKindFloat
+      };
+      return format;
+    }
+  };
 
   template <typename T>
   class TextureArray

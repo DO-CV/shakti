@@ -7,10 +7,9 @@
 #include <DO/Sara/Graphics.hpp>
 #include <DO/Sara/ImageProcessing.hpp>
 
-#include <DO/Shakti/Utilities/Timer.hpp>
-#include <DO/Shakti/MultiArray/MultiArray.hpp>
-
-#include "../image_processing/image_processing.hpp"
+#include <DO/Shakti/ImageProcessing.hpp>
+#include <DO/Shakti/MultiArray.hpp>
+#include <DO/Shakti/Utilities.hpp>
 
 
 namespace DO { namespace Sara {
@@ -123,14 +122,16 @@ std::unique_ptr<T> make_unique(Args&&... args)
 
 GRAPHICS_MAIN()
 {
-  auto video_filepath = string{ "/home/david/Desktop/HAVAS_DANONE_PITCH_EP_1011.mov" };
+  const auto video_filepath = string{
+    "/home/david/Desktop/HAVAS_DANONE_PITCH_EP_1011.mov"
+  };
   auto video_stream = sara::QuicktimeVideoStream{ video_filepath };
   auto video_frame = sara::Image<sara::Rgb8>{};
 
   auto in_frame = sara::Image<float>{};
   auto out_frame = sara::Image<float>{};
 
-  const auto sigma = float{ 2.f };
+  const auto sigma = float{ 3.f };
   auto apply_gaussian_filter = shakti::GaussianFilter{ sigma };
 
   video_stream.bind_frame_rows(video_frame);
@@ -138,6 +139,7 @@ GRAPHICS_MAIN()
   int frame = 0;
   while (true)
   {
+    cout << endl << "[Read Frame] frame = " << frame << endl;
     video_stream.read(video_frame, false);
 
     shakti::tic();
@@ -146,14 +148,18 @@ GRAPHICS_MAIN()
     shakti::toc("Color conversion");
 
     shakti::tic();
-    apply_gaussian_filter(out_frame.data(), in_frame.data(), in_frame.sizes().data());
+    apply_gaussian_filter(out_frame.data(), in_frame.data(),
+                          in_frame.sizes().data());
     shakti::toc("GPU Gaussian");
 
     shakti::tic();
+    shakti::compute_laplacian(out_frame.data(), out_frame.data(),
+                              out_frame.sizes().data());
+    shakti::toc("GPU Laplacian");
+
     if (!sara::active_window())
       sara::create_window(video_frame.sizes());
-    sara::display(out_frame);
-    shakti::toc("Display");
+    sara::display(color_rescale(out_frame));
 
     ++frame;
   }

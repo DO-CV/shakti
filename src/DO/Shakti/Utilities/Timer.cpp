@@ -6,6 +6,9 @@
 #include <DO/Shakti/Utilities/Timer.hpp>
 
 
+using namespace std;
+
+
 namespace DO { namespace Shakti {
 
   Timer::Timer()
@@ -50,7 +53,7 @@ namespace DO { namespace Shakti {
   void toc(const char *what)
   {
     auto time = timer.elapsed_ms();
-    std::cout << "[" << what << "] Elapsed time = " << time << " ms" << std::endl;
+    cout << "[" << what << "] Elapsed time = " << time << " ms" << endl;
   }
 
 } /* namespace Shakti */

@@ -32,6 +32,7 @@ namespace DO { namespace Shakti {
     using base_type::_data;
     using base_type::_sizes;
     using base_type::_strides;
+    using base_type::_pitch;
 
   public:
     using vector_type = typename base_type::vector_type;
@@ -60,7 +61,8 @@ namespace DO { namespace Shakti {
       if (N == 2)
       {
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy2D(
-          (void *) _data, _pitch, (void *) other._data, other._pitch, _sizes[0] * sizeof(T), _sizes[1],
+          (void *) _data, _pitch, (void *) other._data,
+          other._pitch, _sizes[0] * sizeof(T), _sizes[1],
           cudaMemcpyDeviceToDevice));
       }
       else if (N == 3)
@@ -88,13 +90,14 @@ namespace DO { namespace Shakti {
     }
 
     __host__
-    inline MultiArray(const T *host_data, const Vector2i& sizes)
+    inline MultiArray(const T *host_data, const vector_type& sizes)
       : self_type{ sizes }
     {
       if (N == 2)
       {
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy2D(
-          _data, _pitch, host_data, sizes[0] * sizeof(T), sizes[0] * sizeof(T), sizes[1],
+          _data, _pitch, host_data,
+          sizes[0] * sizeof(T), sizes[0] * sizeof(T), sizes[1],
           cudaMemcpyHostToDevice));
       }
       else if (N == 3)
@@ -154,7 +157,8 @@ namespace DO { namespace Shakti {
       auto void_data = reinterpret_cast<void **>(&_data);
 
       if (N == 2)
-        SHAKTI_SAFE_CUDA_CALL(cudaMallocPitch(void_data, &_pitch, _sizes[0] * sizeof(T), _sizes[1]));
+        SHAKTI_SAFE_CUDA_CALL(cudaMallocPitch(
+            void_data, &_pitch, _sizes[0] * sizeof(T), _sizes[1]));
       else if (N == 3)
       {
         cudaPitchedPtr pitched_device_ptr;
@@ -165,7 +169,8 @@ namespace DO { namespace Shakti {
       else
       {
         const auto byte_size = sizeof(T) * this->base_type::size();
-        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(reinterpret_cast<void **>(&_data), byte_size));
+        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(
+            reinterpret_cast<void **>(&_data), byte_size));
       }
     }
   };

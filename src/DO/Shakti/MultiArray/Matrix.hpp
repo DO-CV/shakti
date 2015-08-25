@@ -21,6 +21,7 @@
 
 namespace DO { namespace Shakti {
 
+  //! \brief Matrix class.
   template <typename T, int M, int N>
   class Matrix
   {
@@ -392,7 +393,23 @@ namespace DO { namespace Shakti {
     T _data[M*N];
   };
 
+  //! @{
+  //! \brief Convenient matrix aliases.
+  using Matrix2i = Matrix<int, 2, 2>;
+  using Matrix3i = Matrix<int, 3, 3>;
+  using Matrix4i = Matrix<int, 4, 4>;
 
+  using Matrix2f = Matrix<float, 2, 2>;
+  using Matrix3f = Matrix<float, 3, 3>;
+  using Matrix4f = Matrix<float, 4, 4>;
+
+  using Matrix2d = Matrix<double, 2, 2>;
+  using Matrix3d = Matrix<double, 3, 3>;
+  using Matrix4d = Matrix<double, 4, 4>;
+  //! @}
+
+  //! @{
+  //! \brief Vector class.
   template <typename T, int N>
   using Vector = Matrix<T, N, 1>;
 
@@ -404,7 +421,14 @@ namespace DO { namespace Shakti {
   using Vector3f = Vector<float, 3>;
   using Vector3d = Vector<double, 3>;
 
+  using Vector4i = Vector<int, 4>;
+  using Vector4f = Vector<float, 4>;
+  using Vector4d = Vector<double, 4>;
+  //! @}
 
+
+  //! @
+  //! \brief Output stream operator.
   template <typename T, int M, int N>
   std::ostream& operator<<(std::ostream& os, const Matrix<T, M, N>& m)
   {
@@ -424,6 +448,7 @@ namespace DO { namespace Shakti {
       os << v(i) << " ";
     return os;
   }
+  //! @}
 
 
 } /* namespace Shakti */
