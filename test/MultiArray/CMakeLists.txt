@@ -18,5 +18,5 @@ foreach (file ${test_imageprocessing_SOURCE_FILES})
     TARGET ${filename}
     PROPERTY
     FOLDER "DO Shakti Tests/MultiArray")
-  add_test(MultiArray ${filename})
+  add_test(${filename} ${filename})
 endforeach ()

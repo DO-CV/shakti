@@ -28,7 +28,7 @@ namespace DO { namespace Shakti {
       tex2D(in_float_texture, p.x(), p.y() + 1) - tex2D(in_float_texture, p.x(), p.y() - 1)
     };
     nabla_f *= 0.5f;
-    dst[i] = { p.x(), p.y() };//nabla_f;
+    dst[i] = nabla_f;
   }
 
   __global__

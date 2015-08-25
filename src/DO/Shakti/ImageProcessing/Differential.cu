@@ -78,7 +78,10 @@ namespace DO { namespace Shakti {
     const auto block_size = default_block_size_2d();
     const auto grid_size = default_grid_size_2d(out);
 
+    SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     apply_laplacian_kernel<<<grid_size, block_size>>>(out.data());
+    SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
+
     return out;
   }
 

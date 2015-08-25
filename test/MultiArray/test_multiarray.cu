@@ -45,7 +45,7 @@ TEST(MultiArray, test_copy_between_host_and_device)
   float out_host_data[w*h];
   out_device_image.copy_to_host(out_host_data);
 
-  EXPECT_TRUE(std::equal(in_host_data, in_host_data + w*h, out_host_data));
+  EXPECT_TRUE(equal(in_host_data, in_host_data + w*h, out_host_data));
 }
 
 

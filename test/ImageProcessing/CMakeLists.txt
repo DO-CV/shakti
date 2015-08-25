@@ -9,9 +9,15 @@ find_package(DO_Sara COMPONENTS Core ImageProcessing REQUIRED)
 
 file(GLOB test_imageprocessing_SOURCE_FILES FILES test_*.cpp)
 
+
 foreach (file ${test_imageprocessing_SOURCE_FILES})
   get_filename_component(filename "${file}" NAME_WE)
-  do_add_test(${filename} ${file}
-    "${DO_Sara_LIBRARIES};DO_Shakti_ImageProcessing;DO_Shakti_Utilities;DO_Shakti_MultiArray"
-    "ImageProcessing")
+  add_executable(${filename} ${file})
+  target_link_libraries(${filename}
+    gtest DO_Shakti_Utilities DO_Shakti_MultiArray DO_Shakti_ImageProcessing)
+  set_property(
+    TARGET ${filename}
+    PROPERTY
+    FOLDER "DO Shakti Tests/ImageProcessing")
+  add_test( ${filename} ${filename})
 endforeach ()

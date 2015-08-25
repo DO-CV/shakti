@@ -151,21 +151,15 @@ GRAPHICS_MAIN()
       apply_gaussian_filter(out_frame.data(), in_frame.data(), in_frame.sizes().data());
       shakti::toc("GPU gaussian filter");
 
-      //shakti::tic();
-      //shakti::compute_gradient_squared_norms(out_frame.data(), out_frame.data(), in_frame.sizes().data());
-      //shakti::toc("Gradient norms");
+      shakti::tic();
+      sifts.resize(in_frame.sizes());
+      sift_computer(
+        reinterpret_cast<float *>(sifts.data()), out_frame.data(),
+        out_frame.sizes().data());
+      shakti::toc("Dense SIFT");
 
-      //shakti::tic();
-      //sifts.resize(in_frame.sizes());
-      //sift_computer(
-      //  reinterpret_cast<float *>(sifts.data()), out_frame.data(),
-      //  out_frame.sizes().data());
-      //shakti::toc("Dense SIFT");
-
-      display(out_frame);
-      //draw_sift(sifts(160, 120), 160, 120, 10.f);
-
-      //get_key();
+      display(color_rescale(out_frame));
+      draw_sift(sifts(160, 120), 160, 120, 10.f);
 
       ++video_frame_index;
       cout << endl;

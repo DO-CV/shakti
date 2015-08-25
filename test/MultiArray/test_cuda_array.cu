@@ -54,7 +54,7 @@ TEST(TestCudaArray, test_constructor)
 
   float out[w * h];
   in_array.copy_to_host(out) ;
-  EXPECT_TRUE(std::equal(in, in + w*h, out));
+  EXPECT_TRUE(equal(in, in + w*h, out));
   check(out, { w, h });
 }
 
@@ -80,7 +80,7 @@ TEST(TestCudaArray, test_operation_from_cuda_array_to_multiarray)
 
   float out[3 * 4];
   out_array.copy_to_host(out);
-  EXPECT_TRUE(std::equal(in, in + sizes[0] * sizes[1], out));
+  EXPECT_TRUE(equal(in, in + sizes[0] * sizes[1], out));
 }
 
 int main(int argc, char **argv)

@@ -96,7 +96,7 @@ namespace DO { namespace Shakti {
     // lighting change.
 #pragma unroll
     for (int i = 0; i < N*N*O; ++i)
-      h(i) = min(h(i), max_bin_value);
+      h[i] = min(h[i], max_bin_value);
     // Re-normalize again.
     h.normalize();
   }
@@ -159,14 +159,9 @@ namespace DO { namespace Shakti {
   MultiArray<Vector<float, N*N*O>, 2>
   compute_dense_upright_sift_descriptor(const TextureArray<Vector2f>& gradients)
   {
-    const auto& sizes = gradients.sizes();
-    const dim3 block_size{ 16, 16 };
-    const dim3 grid_size{
-      (sizes[0] + block_size.x - 1) / block_size.x,
-      (sizes[1] + block_size.y - 1) / block_size.y
-    };
-
     MultiArray<Vector<float, N*N*O>, 2> sifts{ gradients.sizes() };
+    const auto block_size = default_block_size_2d();
+    const auto grid_size = default_grid_size_2d(sifts);
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float2_texture, gradients));
     compute_dense_upright_sift_descriptor<N, O><<<grid_size, block_size>>>(sifts.data());
     SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float2_texture));
@@ -205,7 +200,7 @@ namespace DO { namespace Shakti {
                                 const int *sizes) const
   {
     // Compute gradients in polar coordinates.
-    TextureArray<float> in_cuda_array{ in, sizes, sizes[0] * sizeof(float) };
+    TextureArray<float> in_cuda_array{ in, sizes };
     MultiArray<Vector2f, 2> gradients_polar_coords{
       gradient_polar_coords(in_cuda_array)
     };
