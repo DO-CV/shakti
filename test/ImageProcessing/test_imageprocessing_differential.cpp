@@ -22,7 +22,6 @@
 namespace sara = DO::Sara;
 namespace shakti = DO::Shakti;
 
-
 using namespace std;
 using namespace sara;
 

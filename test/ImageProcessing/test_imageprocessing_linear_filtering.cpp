@@ -2,7 +2,7 @@
 // This file is part of DO-CV, a basic set of libraries in C++ for computer
 // vision.
 //
-// Copyright (C) 2013 David Ok <david.ok8@gmail.com>
+// Copyright (C) 2015 David Ok <david.ok8@gmail.com>
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License v. 2.0. If a copy of the MPL was not distributed with this file,
@@ -12,32 +12,17 @@
 
 #include <gtest/gtest.h>
 
-#include <DO/Sara/ImageProcessing/LinearFiltering.hpp>
+#include <DO/Sara/Core.hpp>
+#include <DO/Shakti/ImageProcessing.hpp>
 
 #include "../AssertHelpers.hpp"
 
 
+namespace sara = DO::Sara;
+namespace shakti = DO::Shakti;
+
 using namespace std;
-using namespace DO::Sara;
-
-
-TEST(TestLinearFiltering, test_convolve_array)
-{
-  std::vector<float> signal(10, 1);
-  std::vector<float> kernel(3, 1);
-
-  convolve_array(&signal[0], &kernel[0],
-                 static_cast<int>(signal.size())-2,
-                 static_cast<int>(kernel.size()));
-
-  for (size_t i = 0; i != signal.size(); ++i)
-  {
-    if (i > signal.size()-3)
-      EXPECT_EQ(1, signal[i]);
-    else
-      EXPECT_EQ(3, signal[i]);
-  }
-}
+using namespace sara;
 
 
 class TestFilters : public testing::Test
@@ -61,64 +46,55 @@ protected:
   }
 };
 
-
-TEST_F(TestFilters, test_row_based_filter)
+TEST_F(TestFilters, test_column_based_convolution)
 {
-  Image<float> dst_image;
+  Image<float> dst_image{ 3, 3 };
   MatrixXf true_matrix(3, 3);
   true_matrix << 0.5, 1, 0.5,
                  0.5, 1, 0.5,
                  0.5, 1, 0.5;
 
-  apply_row_based_filter(_src_image, dst_image,
-                         &_kernel[0],
-                         static_cast<int>(_kernel.size()));
+  shakti::apply_column_based_convolution(
+    dst_image.data(), _src_image.data(), _kernel.data(),
+    static_cast<int>(_kernel.size()), _src_image.sizes().data());
   EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
 }
 
-
-TEST_F(TestFilters, test_column_based_filter)
+TEST_F(TestFilters, test_row_based_convolution)
 {
-  Image<float> dst_image;
+  Image<float> dst_image{ 3, 3 };
   MatrixXf true_matrix(3, 3);
   true_matrix.setZero();
 
-  apply_column_based_filter(_src_image, dst_image,
-                            &_kernel[0],
-                            static_cast<int>(_kernel.size()));
+  shakti::apply_row_based_convolution(
+    dst_image.data(), _src_image.data(), _kernel.data(),
+    static_cast<int>(_kernel.size()), _src_image.sizes().data());
   EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
 }
 
-
-TEST_F(TestFilters, test_row_derivative)
+TEST_F(TestFilters, test_x_derivative)
 {
-  Image<float> dst_image;
+  Image<float> dst_image{ 3, 3 };
   MatrixXf true_matrix(3, 3);
   true_matrix << 1, 2, 1,
                  1, 2, 1,
                  1, 2, 1;
 
-  apply_row_derivative(_src_image, dst_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = row_derivative(_src_image);
+  shakti::compute_x_derivative(
+    dst_image.data(), _src_image.data(), _src_image.sizes().data());
   EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
 }
 
-
-TEST_F(TestFilters, test_column_derivative)
+TEST_F(TestFilters, test_y_derivative)
 {
-  Image<float> dst_image;
+  Image<float> dst_image{ 3, 3 };
   MatrixXf true_matrix(3, 3);
   true_matrix.setZero();
 
-  apply_column_derivative(_src_image, dst_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = column_derivative(_src_image);
+  shakti::compute_y_derivative(
+    dst_image.data(), _src_image.data(), _src_image.sizes().data());
   EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
 }
-
 
 TEST_F(TestFilters, test_gaussian)
 {
@@ -134,137 +110,11 @@ TEST_F(TestFilters, test_gaussian)
     exp(-1.0f), exp(-0.5f), exp(-1.f);
   true_matrix /= true_matrix.sum();
 
-  auto dst_image = Image<float>{};
+  auto dst_image = Image<float>{ _src_image.sizes() };
  
-  apply_gaussian_filter(_src_image, dst_image, 1.f, 1.f);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = gaussian(_src_image, 1.f, 1.f);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  // Last case.
-  _src_image.resize(9, 9); // 2 * 4 * 1 + 1 because of Gaussian truncation factor.
-  _src_image.array().fill(0.f);
-  _src_image(4, 4) = 1.f;
-  true_matrix.resize(9, 9);
-  for (int i = 0; i < 9; ++i)
-    for (int j = 0; j < 9; ++j)
-      true_matrix(i, j) = exp(-(pow(i - 4.f, 2) + pow(j - 4.f, 2)) / 2.f);
-  true_matrix /= true_matrix.sum();
-
-  dst_image = _src_image.compute<Gaussian>(1.f);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-}
-
-
-TEST_F(TestFilters, test_sobel)
-{
-  _src_image.array().fill(1);
-  Image<float> dst_image;
-  MatrixXf true_matrix(3, 3);
-  true_matrix.setZero();
-
-  apply_sobel_filter(_src_image, dst_image);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = sobel(_src_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = _src_image.compute<Sobel>();
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-}
-
-
-TEST_F(TestFilters, test_scharr)
-{
-  _src_image.array().fill(1);
-  Image<float> dst_image;
-  MatrixXf true_matrix(3, 3);
-  true_matrix.setZero();
-
-  apply_scharr_filter(_src_image, dst_image);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = scharr(_src_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = _src_image.compute<Scharr>();
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-}
-
-
-TEST_F(TestFilters, test_prewitt)
-{
-  _src_image.array().fill(1);
-  Image<float> dst_image;
-  MatrixXf true_matrix(3, 3);
-  true_matrix.setZero();
-
-  apply_prewitt_filter(_src_image, dst_image);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = prewitt(_src_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = _src_image.compute<Prewitt>();
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-}
-
-
-TEST_F(TestFilters, test_2d_non_separable_filter)
-{
-  int width = 3, height = 4;
-  _src_image.resize(width, height);
-  _src_image.array().fill(1);
-  float kernel_2d[] =
-  {
-    1, 1, 1,
-    1, 1, 1,
-    1, 1, 1
-  };
-
-  Image<float> dst_image;
-  MatrixXf true_matrix(height, width);
-  true_matrix.fill(9);
-
-  apply_2d_non_separable_filter(_src_image, dst_image, kernel_2d, 3, 3);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-}
-
-
-TEST_F(TestFilters, test_laplacian)
-{
-  int width = 3, height = 4;
-  _src_image.resize(width, height);
-  _src_image.array().fill(1);
-  Image<float> dst_image;
-  MatrixXf true_matrix(height, width);
-  true_matrix.setZero();
-
-  apply_laplacian_filter(_src_image, dst_image);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = laplacian_filter(_src_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-}
-
-
-TEST_F(TestFilters, test_roberts_cross)
-{
-  int width = 3, height = 4;
-  _src_image.resize(width, height);
-  _src_image.array().fill(1);
-  Image<float> dst_image;
-  MatrixXf true_matrix(height, width);
-  true_matrix.setZero();
-
-  apply_roberts_cross_filter(_src_image, dst_image);
-  EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
-
-  dst_image = roberts_cross(_src_image);
-  EXPECT_MATRIX_EQ(true_matrix, dst_image.matrix());
-
-  dst_image = _src_image.compute<RobertsCross>();
+  auto apply_gaussian_filter = shakti::GaussianFilter{ 1.f, 1 };
+  apply_gaussian_filter(
+    dst_image.data(), _src_image.data(), _src_image.sizes().data());
   EXPECT_MATRIX_NEAR(true_matrix, dst_image.matrix(), 1e-5);
 }
 

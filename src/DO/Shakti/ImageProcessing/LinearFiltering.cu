@@ -23,7 +23,7 @@ namespace DO { namespace Shakti {
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes)
   {
-    TextureArray<float> in_array{ in, sizes, sizes[0] * sizeof(float) };
+    TextureArray<float> in_array{ in, sizes };
     MultiArray<float, 2> out_array{ sizes };
 
     const auto block_size = default_block_size_2d();
@@ -44,7 +44,7 @@ namespace DO { namespace Shakti {
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes)
   {
-    TextureArray<float> in_array{ in, sizes, sizes[0] * sizeof(float) };
+    TextureArray<float> in_array{ in, sizes, };
     MultiArray<float, 2> out_array{ sizes };
 
     const auto block_size = default_block_size_2d();
