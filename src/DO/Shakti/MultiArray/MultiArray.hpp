@@ -17,6 +17,7 @@
 #include <vector>
 
 #include <DO/Shakti/MultiArray/MultiArrayView.hpp>
+#include "DO/Sara/Core/Meta.hpp"
 
 
 namespace DO { namespace Shakti {
@@ -55,16 +56,18 @@ namespace DO { namespace Shakti {
     }
 
     __host__
-    inline MultiArray(const self_type& other)
+      inline MultiArray(const self_type& other)
       : self_type{ other.sizes() }
     {
-      if (N == 2)
-      {
+      if (N == 1)
+        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy(
+        _data, other._data, base_type::size() * sizeof(T),
+        cudaMemcpyDeviceToDevice));
+      else if (N == 2)
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy2D(
           (void *) _data, _pitch, (void *) other._data,
           other._pitch, _sizes[0] * sizeof(T), _sizes[1],
           cudaMemcpyDeviceToDevice));
-      }
       else if (N == 3)
       {
         cudaMemcpy3DParms params = { 0 };
@@ -84,22 +87,22 @@ namespace DO { namespace Shakti {
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy3D(&params));
       }
       else
-        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy(
-        _data, other._data, base_type::size() * sizeof(T),
-        cudaMemcpyDeviceToDevice));
+        throw std::runtime_error{ "Unsupported dimension!" };
     }
 
     __host__
     inline MultiArray(const T *host_data, const vector_type& sizes)
       : self_type{ sizes }
     {
-      if (N == 2)
-      {
+      if (N == 1)
+        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy(
+          _data, host_data, base_type::size() * sizeof(T),
+          cudaMemcpyHostToDevice));
+      else if (N == 2)
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy2D(
           _data, _pitch, host_data,
           sizes[0] * sizeof(T), sizes[0] * sizeof(T), sizes[1],
           cudaMemcpyHostToDevice));
-      }
       else if (N == 3)
       {
         cudaMemcpy3DParms params = { 0 };
@@ -119,9 +122,7 @@ namespace DO { namespace Shakti {
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy3D(&params));
       }
       else
-        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy(
-        _data, host_data, base_type::size() * sizeof(T),
-        cudaMemcpyHostToDevice));
+        throw std::runtime_error{ "Unsupported dimension!" };
     }
 
     __host__
@@ -156,7 +157,13 @@ namespace DO { namespace Shakti {
 
       auto void_data = reinterpret_cast<void **>(&_data);
 
-      if (N == 2)
+      if (N == 1)
+      {
+        const auto byte_size = sizeof(T) * this->base_type::size();
+        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(
+          reinterpret_cast<void **>(&_data), byte_size));
+      }
+      else if (N == 2)
         SHAKTI_SAFE_CUDA_CALL(cudaMallocPitch(
             void_data, &_pitch, _sizes[0] * sizeof(T), _sizes[1]));
       else if (N == 3)
@@ -167,11 +174,7 @@ namespace DO { namespace Shakti {
         _pitch = pitched_device_ptr.pitch;
       }
       else
-      {
-        const auto byte_size = sizeof(T) * this->base_type::size();
-        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(
-            reinterpret_cast<void **>(&_data), byte_size));
-      }
+        throw std::runtime_error{ "Unsupported dimension!" };
     }
   };
 

@@ -132,6 +132,7 @@ GRAPHICS_MAIN()
   {
     auto devices = shakti::get_devices();
     devices.front().make_current_device();
+    cout << devices.front() << endl;
 
     VideoStream video_stream{
 #ifdef _WIN32

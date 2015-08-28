@@ -256,8 +256,8 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix& operator*=(const Matrix& other)
     {
-      Matrix res((*this) * other);
-      return res;
+      *this = (*this) * other;
+      return *this;
     }
 
     __host__ __device__
@@ -272,7 +272,10 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix& operator/=(const T& other)
     {
-      return this->operator*=(T(1) / other);
+#pragma unroll
+      for (int i = 0; i < M*N; ++i)
+        _data[i] /= other;
+      return *this;
     }
 
     __host__ __device__
@@ -335,13 +338,23 @@ namespace DO { namespace Shakti {
 #pragma unroll
       for (int i = 0; i < M*N; ++i)
           res._data[i] = _data[i] * other;
-      return res ;
+      return res;
     }
 
     __host__ __device__
     friend inline Matrix operator*(const T& a, const Matrix& b)
     {
       return b * a;
+    }
+
+    __host__ __device__
+    inline Matrix operator/(const T& other) const
+    {
+      Matrix res;
+#pragma unroll
+      for (int i = 0; i < M*N; ++i)
+          res._data[i] = _data[i] / other;
+      return res;
     }
 
     __host__ __device__

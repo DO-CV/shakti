@@ -41,18 +41,6 @@ namespace DO { namespace Shakti {
   };
 
   template <>
-  struct ChannelFormatDescriptor<Vector3f>
-  {
-    static inline cudaChannelFormatDesc type()
-    {
-      cudaChannelFormatDesc format = {
-        32, 32, 32, 0, cudaChannelFormatKindFloat
-      };
-      return format;
-    }
-  };
-
-  template <>
   struct ChannelFormatDescriptor<Vector4f>
   {
     static inline cudaChannelFormatDesc type()
@@ -76,16 +64,18 @@ namespace DO { namespace Shakti {
     }
   };
 
+  //! \brief Wrapper class of the `cudaArray` object.
   template <typename T>
   class TextureArray
   {
     using self_type = TextureArray;
 
   public:
+    __host__
     TextureArray() = default;
 
     __host__
-      inline TextureArray(const Vector2i& sizes)
+    inline TextureArray(const Vector2i& sizes)
       : _sizes{ sizes }
     {
       auto channel_descriptor = ChannelFormatDescriptor<T>::type();
@@ -95,7 +85,7 @@ namespace DO { namespace Shakti {
 
     __host__
     inline TextureArray(const T *data, const Vector2i& sizes,
-                 cudaMemcpyKind kind = cudaMemcpyHostToDevice)
+                        cudaMemcpyKind kind = cudaMemcpyHostToDevice)
       : self_type{ sizes }
     {
       copy_from(data, sizes, sizes[0] * sizeof(T), kind);
@@ -103,7 +93,7 @@ namespace DO { namespace Shakti {
 
     __host__
     inline TextureArray(const T *data, const Vector2i& sizes, size_t pitch,
-      cudaMemcpyKind kind = cudaMemcpyHostToDevice)
+                        cudaMemcpyKind kind = cudaMemcpyHostToDevice)
       : self_type{ sizes }
     {
       copy_from(data, sizes, pitch, kind);
