@@ -13,9 +13,15 @@
 #include <DO/Sara/Graphics.hpp>
 #include <DO/Sara/ImageIO.hpp>
 
+#include <DO/Shakti/Segmentation.hpp>
+
+
+namespace sara = DO::Sara;
+namespace shakti = DO::Shakti;
 
 using namespace std;
-using namespace DO::Sara;
+using namespace sara;
+
 
 void draw_grid(const Vector2i& sizes, const Vector2i block_sizes)
 {
@@ -47,7 +53,7 @@ void draw_grid(const Vector2i& sizes, const Vector2i block_sizes)
 GRAPHICS_MAIN()
 {
   auto image_path = src_path("examples/Segmentation/Kingfisher.jpg");
-  auto image = Image<Rgba8>{};
+  auto image = Image<Rgb8>{};
   if (!imread(image, image_path))
   {
     cout << "Cannot read image:\n" << image_path << endl;
@@ -57,7 +63,21 @@ GRAPHICS_MAIN()
   create_window(image.sizes());
   display(image);
   draw_grid(image.sizes(), Vector2i{ 32, 32 });
-  get_key();
+  //get_key();
+
+  Image<shakti::Vector3f, 2> rgb32f_image{ image.sizes() };
+  auto rgb = image.begin();
+  auto rgb32f = rgb32f_image.begin();
+  for ( ; rgb != image.end(); ++rgb, ++rgb32f)
+    for (int c = 0; c < 3; ++c)
+      (*rgb32f)[c] = (*rgb)[c] / 255.f;
+
+  Image<int> labels{ image.sizes() };
+  DO::Shakti::SegmentationSLIC segmentation_slic;
+  segmentation_slic(labels.data(), rgb32f_image.data(), image.sizes().data());
+
+  cout << labels.array().minCoeff() << endl;
+  cout << labels.array().maxCoeff() << endl;
 
   return 0;
 }
