@@ -56,6 +56,14 @@ namespace DO { namespace Shakti {
     }
 
     __host__
+    inline MultiArray( size_type size)
+      : self_type{ vector_type{ int(size) } }
+    {
+      static_assert(N == 1, "MultiArray must be 1D");
+    }
+
+
+    __host__
       inline MultiArray(const self_type& other)
       : self_type{ other.sizes() }
     {
@@ -177,6 +185,9 @@ namespace DO { namespace Shakti {
         throw std::runtime_error{ "Unsupported dimension!" };
     }
   };
+
+  template <typename T>
+  using Array = MultiArray<T, 1>;
 
 } /* namespace Shakti */
 } /* namespace DO */

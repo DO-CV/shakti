@@ -19,12 +19,18 @@ namespace shakti = DO::Shakti;
 using namespace std;
 
 
-TEST(TestMultiArray, test_constructors)
+TEST(TestMultiArray, test_constructor_1d)
+{
+  shakti::Array<float> array{ 10 };
+  EXPECT_EQ(10, array.sizes());
+}
+
+TEST(TestMultiArray, test_constructor_2d)
 {
   shakti::MultiArray<float, 2> matrix{ { 3, 4 } };
-  EXPECT_EQ(matrix.sizes(), shakti::Vector2i(3, 4));
-  EXPECT_EQ(matrix.size(0), 3);
-  EXPECT_EQ(matrix.size(1), 4);
+  EXPECT_EQ(shakti::Vector2i(3, 4), matrix.sizes());
+  EXPECT_EQ(3, matrix.size(0));
+  EXPECT_EQ(4, matrix.size(1));
 }
 
 TEST(MultiArray, test_copy_between_host_and_device)
