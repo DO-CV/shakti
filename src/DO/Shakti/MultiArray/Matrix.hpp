@@ -38,6 +38,13 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline explicit Matrix(const T& x)
+    {
+      static_assert(M == 1 && N == 1, "Matrix must 1x1!");
+      _data[0] = x;
+    }
+
+    __host__ __device__
     inline Matrix(const T& x, const T& y)
     {
       _data[0] = x;
@@ -116,6 +123,13 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline operator const T&() const
+    {
+      static_assert(M == 1 && N == 1, "Matrix must be a scalar");
+      return _data[0];
+    }
+
+    __host__ __device__
     inline const T& x() const
     {
       static_assert(
@@ -173,6 +187,13 @@ namespace DO { namespace Shakti {
     inline T * data()
     {
       return _data;
+    }
+
+    __host__ __device__
+    inline operator T&()
+    {
+      static_assert(M == 1 && N == 1, "Matrix must be a scalar");
+      return _data[0];
     }
 
     __host__ __device__
@@ -281,13 +302,17 @@ namespace DO { namespace Shakti {
     __host__ __device__
     inline Matrix operator+(const Matrix& other) const
     {
-      return (*this += other);
+      Matrix res{ *this };
+      res += other;
+      return res;
     }
 
     __host__ __device__
     inline Matrix operator-(const Matrix& other) const
     {
-      return (*this += other);
+      Matrix res{ *this };
+      res -= other;
+      return res;
     }
 
     template <int O>
@@ -425,6 +450,10 @@ namespace DO { namespace Shakti {
   //! \brief Vector class.
   template <typename T, int N>
   using Vector = Matrix<T, N, 1>;
+
+  using Vector1i = Vector<int, 1>;
+  using Vector1f = Vector<float, 1>;
+  using Vector1d = Vector<double, 1>;
 
   using Vector2i = Vector<int, 2>;
   using Vector2f = Vector<float, 2>;
