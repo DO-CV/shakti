@@ -27,11 +27,11 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out_array{ sizes };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out_array);
+    const auto grid_size = grid_size_2d(out_array);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
-    cudaMemcpyToSymbol(convolution_kernel, kernel, sizeof(float) * kernel_size);
-    cudaMemcpyToSymbol(convolution_kernel_size, &kernel_size, sizeof(int));
+    cudaMemcpyToSymbol(Shakti::kernel, kernel, sizeof(float) * kernel_size);
+    cudaMemcpyToSymbol(Shakti::kernel_size, &kernel_size, sizeof(int));
 
     apply_row_based_convolution<<<grid_size, block_size>>>(out_array.data());
 
@@ -48,11 +48,13 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out_array{ sizes };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out_array);
+    const auto grid_size = grid_size_2d(out_array);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
-    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(convolution_kernel, kernel, sizeof(float) * kernel_size));
-    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(convolution_kernel_size, &kernel_size, sizeof(int)));
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::kernel, kernel, sizeof(float) * kernel_size));
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::kernel_size, &kernel_size, sizeof(int)));
 
     apply_column_based_convolution<<<grid_size, block_size>>>(out_array.data());
 
@@ -86,9 +88,9 @@ namespace DO { namespace Shakti {
       _kernel[i] /= sum;
 
     SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
-      convolution_kernel, _kernel.data(), sizeof(float) * _kernel.size()));
+      Shakti::kernel, _kernel.data(), sizeof(float) * _kernel.size()));
     SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
-      convolution_kernel_size, &kernel_size, sizeof(int)));
+      Shakti::kernel_size, &kernel_size, sizeof(int)));
   }
 
   void GaussianFilter::operator()(float *out, const float *in, const int *sizes) const
@@ -97,12 +99,13 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out_array{ { sizes[0], sizes[1] } };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out_array);
+    const auto grid_size = grid_size_2d(out_array);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
     {
       apply_column_based_convolution<<<grid_size, block_size>>>(out_array.data());
-      in_array.copy_from(out_array.data(), out_array.sizes(), out_array.pitch(), cudaMemcpyDeviceToDevice);
+      in_array.copy_from(out_array.data(), out_array.sizes(), out_array.pitch(),
+                         cudaMemcpyDeviceToDevice);
       apply_row_based_convolution<<<grid_size, block_size>>>(out_array.data());
     }
     SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
@@ -116,7 +119,7 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     {

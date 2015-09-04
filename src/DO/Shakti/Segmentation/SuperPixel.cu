@@ -6,35 +6,44 @@
 #include <DO/Shakti/Segmentation/SuperPixel.hpp>
 
 
-#define MAX_BLOCK_SIZE 256
+using namespace std;
 
 
 namespace DO { namespace Shakti {
 
+  // Dimensions of the image 2D array.
   __constant__ Vector2i image_sizes;
   __constant__ int image_padded_width;
 
+  // Dimensions of the clusters 2D array
   __constant__ Vector2i num_clusters;
   __constant__ Vector2i cluster_sizes;
+  __constant__ int clusters_padded_width;
 
+  // Dimensions of the labels 2D array
+  __constant__ int labels_padded_width;
+
+  // Control parameter for the squared distance.
   __constant__ float distance_weight;
 
+  __device__
+  inline float squared_distance(const Vector2f& x1, const Vector4f& I1,
+                                const Vector2f& x2, const Vector4f& I2)
+  {
+    return (I1 - I2).squared_norm() + distance_weight * (x1 - x2).squared_norm();
+  }
 
   // At the beginning a cluster corresponds to a block in a grid.
   __global__
-  void init_clusters(Cluster *out_clusters, const Vector3f *in_image)
+  void init_clusters(Cluster *out_clusters, const Vector4f *in_image)
   {
-    // The 1D index of the block is:
-    const auto i_b = blockIdx.x * blockDim.x + threadIdx.x;
-
-    // The 2D indices of the block is:
-    const auto x_b = i_b % num_clusters.x();
-    const auto y_b = i_b / num_clusters.y();
+    const auto i_b = offset<2>();
+    const auto p_b = coords<2>();
 
     // The image coordinates of the top-left corner of the block is:
     const auto tl_b = Vector2f{
-      x_b*cluster_sizes.x(),
-      y_b*cluster_sizes.y()
+      p_b.x()*cluster_sizes.x(),
+      p_b.y()*cluster_sizes.y()
     };
 
     // The 2D image coordinates of the block center is:
@@ -45,158 +54,134 @@ namespace DO { namespace Shakti {
     out_clusters[i_b].num_points = 0;
     out_clusters[i_b].center = c_b;
     out_clusters[i_b].color = in_image[o_c_b];
-
-  }
-
-  __device__
-  float squared_distance(const Vector2f& x1, const Vector3f& I1,
-                         const Vector2f& x2, const Vector3f& I2)
-  {
-    // TODO.
-    return 0.f;
   }
 
   __global__
-  void assign_means(int *out_labels, const Vector3f *in_image, const Cluster *in_clusters)
+  void assign_means(int *out_labels,
+                    const Cluster *in_clusters, const Vector4f *in_image)
   {
     // For each thread in the block, populate the list of nearest cluster centers.
-    __shared__ int x1, x2, y1, y2;
-    __shared__ int x1_b, x2_b, y1_b, y2_b;
-    __shared__ Vector3f I_c[3][3]; // I(c) = color value of a cluster center $c$.
+    __shared__ int x1, y1, x2, y2;
+    __shared__ Vector4f I_c[3][3]; // I(c) = color value of a cluster center $c$.
     __shared__ Vector2f p_c[3][3]; // p(c) = coordinates of cluster center $c$.
 
-    // Pixel indices.
-    __shared__ Cluster pixelUpdateList[MAX_BLOCK_SIZE];
-    __shared__ Vector2f pixelUpdateIdx[MAX_BLOCK_SIZE];
-
-    // Get the pixel 2D coordinates, offset and color value.
+    // Get the pixel 2D coordinates
     const auto _p_i = coords<2>();
-    // Don't consider padded region of the image.
+    // Stop the kernel if we process the padded region of the image.
     if (_p_i.x() >= image_sizes.x() || _p_i.y() >= image_sizes.y())
       return;
+    // Get the offset and color value.
     const auto p_i = Vector2f{ _p_i.x(), _p_i.y() };
     const auto i = offset<2>();
-    const auto I_i = in_image[i];
+    const auto I_i = in_image[_p_i.x() + _p_i.y()*image_padded_width];
+
+    const int x_t = threadIdx.x;
+    const int y_t = threadIdx.y;
 
     // For each pixel (x, y), find the spatially nearest cluster centers.
     // In each block, the 3x3 top-left threads will populate the list of the cluster centers.
     // The other threads will wait.
-    if (threadIdx.x < 3 || threadIdx.y < 3)
+    if (x_t < 3 && y_t < 3)
     {
-      // Take care of the boundary case.
       x1 = blockIdx.x == 0 ? 1 : 0;
       y1 = blockIdx.y == 0 ? 1 : 0;
-      x2 = blockIdx.x >= num_clusters.x() ? 1 : 2;
-      y2 = blockIdx.y >= num_clusters.y() ? 1 : 2;
+      x2 = blockIdx.x >= num_clusters.x() ? 2 : 3;
+      y2 = blockIdx.y >= num_clusters.y() ? 2 : 3;
 
-      // Retrieve the corresponding blocks.
-      x1_b = blockIdx.x + x1 - 1;
-      y1_b = blockIdx.y + y1 - 1;
+      auto x_b = int(blockIdx.x) + x_t - 1;
+      auto y_b = int(blockIdx.y) + y_t - 1;
 
-      x2_b = blockIdx.x + x2 - 1;
-      y2_b = blockIdx.y + y2 - 1;
-
-#pragma unroll
-      for (int x_b = x1_b; x_b < x2_b; ++x_b)
+      if ( 0 <= x_b && x_b < num_clusters.x() &&
+           0 <= y_b && y_b < num_clusters.y() )
       {
-#pragma unroll
-        for (int y_b = x1_b; y_b < y2_b; ++y_b)
-        {
-          I_c[x_b][y_b] = in_clusters[x_b + y_b * cluster_sizes.x()].color;
-          p_c[x_b][y_b] = in_clusters[x_b + y_b * cluster_sizes.x()].center;
-        }
+        I_c[x_t][y_t] = in_clusters[x_b + y_b * clusters_padded_width].color;
+        p_c[x_t][y_t] = in_clusters[x_b + y_b * clusters_padded_width].center;
       }
     }
 
     __syncthreads();
 
-
-    // Assign the closest centers.
-    Vector2i closest_cluster_index{};
-    float closest_distance{ CUDART_INF_F };
+    // Assign the index of the nearest cluster to pixel (x,y).
+    Vector2i nearest_cluster_idx{};
+    float nearest_distance{ CUDART_INF_F };
 #pragma unroll
-    for (int x_b = x1_b; x_b < x2_b; ++x_b)
+    for (int x = x1; x < x2; ++x)
     {
 #pragma unroll
-      for (int y_b = x1_b; y_b < y2_b; ++y_b)
+      for (int y = y1; y < y2; ++y)
       {
-        auto d = squared_distance(p_c[x_b][y_b], I_c[x_b][y_b], p_i, I_i);
-        if (d < closest_distance)
+        auto d = squared_distance(p_c[x][y], I_c[x][y], p_i, I_i);
+        if (d < nearest_distance)
         {
-          closest_distance = d;
-          closest_cluster_index = Vector2i{ x_b, y_b };
+          nearest_distance = d;
+          nearest_cluster_idx = Vector2i{
+            blockIdx.x + x - 1,
+            blockIdx.y + y - 1
+          };
         }
       }
     }
 
-    const auto cluster_offset = closest_cluster_index.x() + closest_cluster_index.y() * num_clusters.x();
+    const auto cluster_offset =
+      nearest_cluster_idx.x() + nearest_cluster_idx.y() * num_clusters.x();
     out_labels[i] = cluster_offset;
   }
 
   __global__
-  void update_means(Cluster *out_clusters, const int *in_labels, const Vector3f *in_image)
+  void update_means(Cluster *out_clusters,
+                    const int *in_labels, const Vector4f *in_image)
   {
-    int blockWidth = image_sizes.x() / blockDim.x;
-    int blockHeight = image_sizes.y() / gridDim.x;
+    // Be very careful with vicious issues due to memory padding!
+    const auto cluster_offset = offset<2>();
+    const auto cluster_pos = coords<2>();
+    const auto cluster_idx = cluster_pos.x() + num_clusters.x() * cluster_pos.y();
 
-    int clusterIdx = blockIdx.x*blockDim.x + threadIdx.x;
+    Vector2f cur_mean_pos = out_clusters[cluster_offset].center;
+    Vector2f new_mean_pos{ Vector2f::Zero() };
+    Vector4f new_mean_color{ Vector4f::Zero() };
+    int num_points = 0;
 
-    int offsetBlock = threadIdx.x * blockWidth + blockIdx.x * blockHeight * image_sizes.x();
+    const int h_b = cluster_sizes.y();
+    const int w_b = cluster_sizes.x();
 
-    Vector2f crntXY = out_clusters[clusterIdx].center;
-    Vector3f avLab;
-    Vector2f avXY;
-    int nPoints = 0;
+    const int x1 = 0 <= cur_mean_pos.x() - w_b ? cur_mean_pos.x() - w_b : 0;
+    const int y1 = 0 <= cur_mean_pos.y() - h_b ? cur_mean_pos.y() - h_b : 0;
 
-    avLab.x() = 0;
-    avLab.y() = 0;
-    avLab.z() = 0;
+    const int x2 = image_sizes.x() >= cur_mean_pos.x() + w_b?
+                   cur_mean_pos.x() + w_b : image_sizes.x();
 
-    avXY.x() = 0;
-    avXY.y() = 0;
+    const int y2 = image_sizes.y() >= cur_mean_pos.y() + h_b?
+                   cur_mean_pos.y() + h_b : image_sizes.y();
 
-    int yBegin = 0 < (crntXY.y() - blockHeight) ? (crntXY.y() - blockHeight) : 0;
-    int yEnd = image_sizes.y() > (crntXY.y() + blockHeight) ? (crntXY.y() + blockHeight) : (image_sizes.y() - 1);
-    int xBegin = 0 < (crntXY.x() - blockWidth) ? (crntXY.x() - blockWidth) : 0;
-    int xEnd = image_sizes.x() > (crntXY.x() + blockWidth) ? (crntXY.x() + blockWidth) : (image_sizes.x() - 1);
-
-    //update to cluster centers
-    for (int i = yBegin; i < yEnd; i++)
+    // Update to cluster centers.
+    for (int y = y1; y < y2; ++y)
     {
-      for (int j = xBegin; j < xEnd; j++)
+      for (int x = x1; x < x2; ++x)
       {
-        int offset = j + i * image_sizes.x();
+        const auto image_offset = x + y * image_padded_width;
+        const auto label_offset = x + y * labels_padded_width;
 
-        Vector3f fPixel = in_image[offset];
-        int pIdx = in_labels[offset];
+        Vector4f color = in_image[image_offset];
+        int label = in_labels[label_offset];
 
-        if (pIdx == clusterIdx)
+        if (label == cluster_idx)
         {
-          avLab.x() += fPixel.x();
-          avLab.y() += fPixel.y();
-          avLab.z() += fPixel.z();
-
-          avXY.x() += j;
-          avXY.y() += i;
-
-          nPoints++;
+          new_mean_color += color;
+          new_mean_pos += Vector2f(x, y);
+          ++num_points;
         }
       }
     }
 
-    if (nPoints == 0)
+    if (num_points == 0)
       return;
 
-    avLab.x() /= nPoints;
-    avLab.y() /= nPoints;
-    avLab.z() /= nPoints;
+    new_mean_color /= float(num_points);
+    new_mean_pos /= float(num_points);
 
-    avXY.x() /= nPoints;
-    avXY.y() /= nPoints;
-
-    out_clusters[clusterIdx].color = avLab;
-    out_clusters[clusterIdx].center = avXY;
-    out_clusters[clusterIdx].num_points = nPoints;
+    out_clusters[cluster_offset].color = new_mean_color;
+    out_clusters[cluster_offset].center = new_mean_pos;
+    out_clusters[cluster_offset].num_points = num_points;
   }
 
 } /* namespace Shakti */
@@ -204,6 +189,15 @@ namespace DO { namespace Shakti {
 
 
 namespace DO { namespace Shakti {
+
+  SegmentationSLIC::SegmentationSLIC()
+  {
+    _cluster_sizes = Vector2i{ 16, 16 };
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      cluster_sizes, &_cluster_sizes, sizeof(Vector2i)));
+
+    set_distance_weight(0.f);
+  }
 
   Vector2i SegmentationSLIC::get_image_sizes() const
   {
@@ -221,71 +215,124 @@ namespace DO { namespace Shakti {
     return padded_width;
   }
 
-  void SegmentationSLIC::set_image_sizes(const Vector2i& sizes) const
+  float SegmentationSLIC::get_distance_weight() const
+  {
+    auto distance_weight = float{};
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyFromSymbol(
+      &distance_weight, Shakti::distance_weight, sizeof(float)));
+    return distance_weight;
+  }
+
+  void SegmentationSLIC::set_image_sizes(const Vector2i& sizes, int padded_width)
   {
     SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       image_sizes, &sizes, sizeof(Vector2i)));
-  }
 
-  void SegmentationSLIC::set_image_padded_width(int padded_width) const
-  {
     SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
       image_padded_width, &padded_width, sizeof(int)));
+
+    // Set the image grid for CUDA.
+    _image_block_sizes = default_block_size_2d();
+    _image_grid_sizes = grid_size_2d(sizes, padded_width, _image_block_sizes);
+  }
+
+  void SegmentationSLIC::set_distance_weight(float distance_weight)
+  {
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::distance_weight, &distance_weight, sizeof(int)));
   }
 
   MultiArray<int, 2>
-  SegmentationSLIC::operator()(const MultiArray<Vector3f, 2>& image) const
+  SegmentationSLIC::operator()(const MultiArray<Vector4f, 2>& image)
   {
-    // Create the image of labels.
-    MultiArray<int, 2> labels{ image.sizes() };
+    set_image_sizes(image);
 
-    // Create the grid for CUDA.
-    const auto image_block_sizes = default_block_size_2d();
-    const auto image_grid_sizes = default_grid_size_2d(labels);
+    MultiArray<int, 2> labels{ init_labels(image) };
+    MultiArray<Cluster, 2> clusters{ init_clusters(image) };
 
-    // Compute the number of clusters.
-    const auto& sizes = image.sizes();
-    const auto padded_width = image.padded_width();
-    const auto num_clusters_2d = Vector2i(
-      (sizes.x() + image_block_sizes.x - 1) / image_block_sizes.x, // number of clusters per columns
-      (sizes.y() + image_block_sizes.y - 1) / image_block_sizes.y // number of clusters per rows
-    );
-    const auto num_clusters = num_clusters_2d.x() * num_clusters_2d.y();
-
-    const auto cluster_block_sizes = 16;
-    const auto cluster_grid_sizes = (num_clusters + cluster_block_sizes - 1) / cluster_block_sizes;
-
-    MultiArray<Cluster, 2> clusters{ { num_clusters, 1 } };
-
-    // Init clusters.
-    cudaMemcpyToSymbol(&image_sizes, image.sizes().data(), sizeof(Vector2i));
-    cudaMemcpyToSymbol(&image_padded_width, &padded_width, sizeof(int));
-    cudaMemcpyToSymbol(&num_clusters, num_clusters_2d.data(), sizeof(Vector2i));
-    Shakti::init_clusters<<<cluster_grid_sizes, cluster_block_sizes>>>(clusters.data(), image.data());
-
-    // Iterate.
     for (int i = 0; i < 5; ++i)
     {
-      assign_means<<<image_grid_sizes, image_block_sizes>>>(labels.data(), image.data(), clusters.data());
-      update_means<<<cluster_grid_sizes, cluster_block_sizes>>>(clusters.data(), labels.data(), image.data());
+      assign_means(labels, clusters, image);
+      update_means(clusters, labels, image);
     }
+    assign_means(labels, clusters, image);
 
     return labels;
   }
 
   void
-  SegmentationSLIC::operator()(int *labels, const Vector3f *rgb_image, const int *sizes) const
+  SegmentationSLIC::operator()(int *labels, const Vector4f *rgba_image, const int *sizes)
   {
-    auto image_array = MultiArray<Vector3f, 2>{ rgb_image, sizes };
+    auto image_array = MultiArray<Vector4f, 2>{ rgba_image, sizes };
     auto labels_array = (*this)(image_array);
     labels_array.copy_to_host(labels);
   }
 
   MultiArray<Cluster, 2>
-  SegmentationSLIC::init_clusters(const MultiArray<Vector3f, 2>& image) const
+  SegmentationSLIC::init_clusters(const MultiArray<Vector4f, 2>& image)
   {
-    MultiArray<Cluster, 2> clusters{ image.sizes() };
+    // Compute the number of clusters.
+    const auto& sizes = image.sizes();
+    const auto num_clusters = Vector2i(
+      // Number of clusters per columns.
+      (sizes.x() + _image_block_sizes.x - 1) / _image_block_sizes.x,
+      // Number of clusters per rows.
+      (sizes.y() + _image_block_sizes.y - 1) / _image_block_sizes.y
+    );
+
+    // Initialize the clusters with the block centers.
+    MultiArray<Cluster, 2> clusters{ num_clusters };
+
+    // Register the dimensions of the clusters 2D array for CUDA.
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::num_clusters, &num_clusters, sizeof(Vector2i)));
+    const auto cluster_padded_width = clusters.padded_width();
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::clusters_padded_width, &cluster_padded_width, sizeof(int)));
+
+    // Set the cluster grid for CUDA.
+    _cluster_block_sizes = dim3(_cluster_sizes.x(), _cluster_sizes.y());
+    _cluster_grid_sizes = grid_size_2d(clusters, _cluster_block_sizes);
+    Shakti::init_clusters<<<_cluster_grid_sizes, _cluster_block_sizes>>>(
+      clusters.data(), image.data());
+
     return clusters;
+  }
+
+  MultiArray<int, 2>
+  SegmentationSLIC::init_labels(const MultiArray<Vector4f, 2>& image)
+  {
+    // Initialize the labels with the block centers.
+    MultiArray<int, 2> labels{ image.sizes() };
+
+    // Register the dimensions of the labels 2D array for CUDA.
+    const auto labels_padded_width = labels.padded_width();
+    SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(
+      Shakti::labels_padded_width, &labels_padded_width, sizeof(int)));
+
+    // Set the labels grid for CUDA.
+    _labels_block_sizes = dim3(_cluster_sizes.x(), _cluster_sizes.y());
+    _labels_grid_sizes = grid_size_2d(labels);
+
+    return labels;
+  }
+
+  void
+  SegmentationSLIC::assign_means(MultiArray<int, 2>& labels,
+                                 const MultiArray<Cluster, 2>& clusters,
+                                 const MultiArray<Vector4f, 2>& image)
+  {
+    Shakti::assign_means<<<_labels_grid_sizes, _labels_block_sizes>>>(
+      labels.data(), clusters.data(), image.data());
+  }
+
+  void
+  SegmentationSLIC::update_means(MultiArray<Cluster, 2>& clusters,
+                                 const MultiArray<int, 2>& labels,
+                                 const MultiArray<Vector4f, 2>& image)
+  {
+    Shakti::update_means<<<_cluster_grid_sizes, _cluster_block_sizes>>>(
+      clusters.data(), labels.data(), image.data());
   }
 
 } /* namespace Shakti */

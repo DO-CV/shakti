@@ -60,6 +60,15 @@ namespace DO { namespace Shakti {
     }
 
     __host__ __device__
+    inline Matrix(const T& x, const T& y, const T& z, const T& w)
+    {
+      _data[0] = x;
+      _data[1] = y;
+      _data[2] = z;
+      _data[3] = w;
+    }
+
+    __host__ __device__
     inline Matrix(const T *data)
     {
 #pragma unroll
@@ -486,8 +495,14 @@ namespace DO { namespace Shakti {
   template <typename T, int N>
   std::ostream& operator<<(std::ostream& os, const Vector<T, N>& v)
   {
+    os << "[ ";
     for (int i = 0; i < N; ++i)
-      os << v(i) << " ";
+    {
+      os << v(i);
+      if (i < N - 1)
+        os << ", ";
+    }
+    os << " ]";
     return os;
   }
   //! @}

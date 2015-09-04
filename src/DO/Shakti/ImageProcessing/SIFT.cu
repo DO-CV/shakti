@@ -161,7 +161,7 @@ namespace DO { namespace Shakti {
   {
     MultiArray<Vector<float, N*N*O>, 2> sifts{ gradients.sizes() };
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(sifts);
+    const auto grid_size = grid_size_2d(sifts);
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float2_texture, gradients));
     compute_dense_upright_sift_descriptor<N, O><<<grid_size, block_size>>>(sifts.data());
     SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float2_texture));

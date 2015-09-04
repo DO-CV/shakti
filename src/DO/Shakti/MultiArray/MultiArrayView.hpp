@@ -223,25 +223,6 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
-    //! @{
-    //! \brief Return the i-th slice of the MultiArray object.
-    __host__ __device__
-    inline slice_type operator[](int i)
-    {
-      slice_vector_type sizes(_sizes.tail(N-1));
-      T * data = _data + _strides[0] * i;
-      return slice_type(data, sizes);
-    }
-
-    __host__ __device__
-    inline const_slice_type operator[](int i) const
-    {
-      slice_vector_type slice_sizes(_sizes.tail(N-1));
-      const T * data = _data + _strides[0] * i;
-      return const_slice_type(data, slice_sizes);
-    }
-    //! @}
-
     //! \brief Copy the ND-array device array to host array.
     //! You must allocate the array with the appropriate size.
     __host__

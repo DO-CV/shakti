@@ -62,9 +62,8 @@ namespace DO { namespace Shakti {
       static_assert(N == 1, "MultiArray must be 1D");
     }
 
-
     __host__
-      inline MultiArray(const self_type& other)
+    inline MultiArray(const self_type& other)
       : self_type{ other.sizes() }
     {
       if (N == 1)
@@ -144,6 +143,13 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
+    //! \brief Assignment operator uses the copy-swap idiom.
+    self_type& operator=(self_type other)
+    {
+      swap(other);
+      return *this;
+    }
+
     //! \brief Destructor.
     __host__
     inline ~MultiArray()
@@ -151,7 +157,7 @@ namespace DO { namespace Shakti {
       SHAKTI_SAFE_CUDA_CALL(cudaFree(_data));
     }
 
-    //! Resize the multi-array.
+    //! \brief Resize the multi-array.
     __host__
     inline void resize(const vector_type& sizes)
     {
@@ -168,12 +174,13 @@ namespace DO { namespace Shakti {
       if (N == 1)
       {
         const auto byte_size = sizeof(T) * this->base_type::size();
-        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(
-          reinterpret_cast<void **>(&_data), byte_size));
+        SHAKTI_SAFE_CUDA_CALL(cudaMalloc(void_data, byte_size));
       }
       else if (N == 2)
+      {
         SHAKTI_SAFE_CUDA_CALL(cudaMallocPitch(
-            void_data, &_pitch, _sizes[0] * sizeof(T), _sizes[1]));
+          void_data, &_pitch, _sizes[0] * sizeof(T), _sizes[1]));
+      }
       else if (N == 3)
       {
         cudaPitchedPtr pitched_device_ptr;
@@ -183,6 +190,15 @@ namespace DO { namespace Shakti {
       }
       else
         throw std::runtime_error{ "Unsupported dimension!" };
+    }
+
+    //! \brief Swap multi-array objects.
+    void swap(self_type& other)
+    {
+      using std::swap;
+      swap(_sizes, other._sizes);
+      swap(_strides, other._strides);
+      swap(_pitch, other._pitch);
     }
   };
 

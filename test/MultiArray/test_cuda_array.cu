@@ -73,7 +73,7 @@ TEST(TestCudaArray, test_operation_from_cuda_array_to_multiarray)
   {
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in_array));
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out_array);
+    const auto grid_size = grid_size_2d(out_array);
     copy_from_texture_to_global_memory<<<grid_size, block_size>>>(out_array.data());
     SHAKTI_SAFE_CUDA_CALL(cudaUnbindTexture(in_float_texture));
   }
