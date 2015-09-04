@@ -42,6 +42,8 @@ namespace DO { namespace Shakti {
     using slice_type = typename base_type::slice_type;
     using const_slice_type = const MultiArray<T, N-1, Strides>;
 
+    using size_type = typename base_type::size_type;
+
   public:
     //! @{
     //! \brief Constructor.
@@ -56,7 +58,7 @@ namespace DO { namespace Shakti {
     }
 
     __host__
-    inline MultiArray( size_type size)
+    inline MultiArray(size_type size)
       : self_type{ vector_type{ int(size) } }
     {
       static_assert(N == 1, "MultiArray must be 1D");

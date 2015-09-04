@@ -16,5 +16,6 @@ target_link_libraries(quicktime_read_example
   ${DO_Sara_LIBRARIES}
   DO_Shakti_MultiArray
   DO_Shakti_ImageProcessing
+  DO_Shakti_Segmentation
   DO_Shakti_Utilities
 )

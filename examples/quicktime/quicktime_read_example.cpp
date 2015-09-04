@@ -10,6 +10,7 @@
 #include <DO/Shakti/ImageProcessing.hpp>
 #include <DO/Shakti/MultiArray.hpp>
 #include <DO/Shakti/Utilities.hpp>
+#include <DO/Shakti/Segmentation.hpp>
 
 
 namespace DO { namespace Sara {
@@ -120,7 +121,7 @@ std::unique_ptr<T> make_unique(Args&&... args)
 }
 
 
-GRAPHICS_MAIN()
+void gaussian_demo()
 {
   const auto video_filepath = string{
     "/home/david/Desktop/HAVAS_DANONE_PITCH_EP_1011.mov"
@@ -163,6 +164,84 @@ GRAPHICS_MAIN()
 
     ++frame;
   }
+}
 
+
+void superpixel_demo()
+{
+  using namespace sara;
+
+  auto devices = shakti::get_devices();
+  devices.front().make_current_device();
+  cout << devices.front() << endl;
+
+  const auto video_filepath = string{
+    "/home/david/Desktop/HAVAS_DANONE_PITCH_EP_1011.mov"
+  };
+  auto video_stream = sara::QuicktimeVideoStream{ video_filepath };
+  auto video_frame = sara::Image<sara::Rgb8>{};
+  auto video_frame_index = int{ 0 };
+
+  video_stream.bind_frame_rows(video_frame);
+
+  shakti::SegmentationSLIC slic;
+  slic.set_distance_weight(1e-4f);
+
+  auto frame_rgba32f = Image<Rgba32f>{};
+  auto labels = Image<int>{};
+  auto segmentation = Image<Rgba32f>{};
+  auto means = vector<Rgba32f>{};
+  auto cardinality = vector<int>{};
+
+  while (true)
+  {
+    cout << endl << "[Read Frame] frame = " << video_frame_index << endl;
+    video_stream.read(video_frame, false);
+
+    if (!active_window())
+      create_window(video_frame.sizes());
+
+    frame_rgba32f = video_frame.convert<Rgba32f>();
+    labels.resize(video_frame.sizes());
+    segmentation.resize(video_frame.sizes());
+
+    Timer t;
+    t.restart();
+    slic(labels.data(),
+         reinterpret_cast<shakti::Vector4f *>(frame_rgba32f.data()),
+         frame_rgba32f.sizes().data());
+    cout << "Segmentation time = " << t.elapsed_ms() << "ms" << endl;
+
+    means.resize(labels.array().maxCoeff() + 1);
+    cardinality.resize(labels.array().maxCoeff() + 1);
+    fill(means.begin(), means.end(), Rgba32f::Zero());
+    fill(cardinality.begin(), cardinality.end(), 0);
+
+    // Compute the mean clusters.
+    for (int y = 0; y < segmentation.height(); ++y)
+      for (int x = 0; x < segmentation.width(); ++x)
+      {
+        means[labels(x, y)] += frame_rgba32f(x, y);
+        ++cardinality[labels(x, y)];
+      }
+    for (size_t i = 0; i < means.size(); ++i)
+      means[i] /= cardinality[i];
+
+    // Update the segmentation.
+    for (int y = 0; y < segmentation.height(); ++y)
+      for (int x = 0; x < segmentation.width(); ++x)
+        segmentation(x, y) = means[labels(x, y)];
+
+    display(segmentation);
+
+    ++video_frame_index;
+    cout << endl;
+  }
+}
+
+
+GRAPHICS_MAIN()
+{
+  superpixel_demo();
   return 0;
 }

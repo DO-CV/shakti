@@ -6,8 +6,8 @@ if (POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif ()
 
-option(DO_BUILD_SAMPLES "Build samples in Shakti libraries" ON)
-option(DO_BUILD_TESTS "Build unit tests for Shakti libraries" ON)
+option(DO_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
+option(DO_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 
 # Set CMake module path.
 if (WIN32)
