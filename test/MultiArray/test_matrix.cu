@@ -18,7 +18,22 @@ using namespace std;
 using namespace DO::Shakti;
 
 
-TEST(TestMatrix, test_constructors)
+TEST(TestMatrix, test_constructor_1d)
+{
+  Vector1i p{ 10 };
+  EXPECT_EQ(10, p);
+
+  int& p_as_scalar = p;
+  const int& p_as_const_scalar = p;
+  EXPECT_EQ(10, p_as_scalar);
+  EXPECT_EQ(10, p_as_const_scalar);
+
+  p_as_scalar = 12;
+  EXPECT_EQ(12, p_as_scalar);
+  EXPECT_EQ(12, p_as_const_scalar);
+}
+
+TEST(TestMatrix, test_constructor_2d)
 {
   Vector2i p{ 2, 1 };
   EXPECT_EQ(p.x(), 2);

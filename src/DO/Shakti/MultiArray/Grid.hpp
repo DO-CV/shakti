@@ -22,14 +22,21 @@ namespace DO { namespace Shakti {
     return dim3{ 16, 16 };
   }
 
-  template <typename T, int N, typename Strides>
-  inline dim3 default_grid_size_2d(const MultiArrayView<T, N, Strides>& data)
+  inline dim3 grid_size_2d(const Vector2i& sizes,
+                           const int padded_width,
+                           dim3 block_size = default_block_size_2d())
   {
-    const auto block_size = default_block_size_2d();
     return dim3{
-      (data.padded_width() + block_size.x - 1) / block_size.x,
-      (data.height() + block_size.y - 1) / block_size.y,
+      (padded_width + block_size.x - 1) / block_size.x,
+      (sizes.y() + block_size.y - 1) / block_size.y,
     };
+  }
+
+  template <typename T, int N, typename Strides>
+  inline dim3 grid_size_2d(const MultiArrayView<T, N, Strides>& data,
+                           dim3 block_size = default_block_size_2d())
+  {
+    return grid_size_2d(data.sizes(), data.padded_width(), block_size);
   }
 
 } /* namespace Shakti */

@@ -23,7 +23,7 @@ namespace DO { namespace Shakti {
     MultiArray<Vector2f, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     apply_gradient_kernel<<<grid_size, block_size>>>(out.data());
@@ -37,7 +37,7 @@ namespace DO { namespace Shakti {
     MultiArray<Vector2f, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     apply_gradient_polar_coordinates_kernel<<<grid_size, block_size>>>(out.data());
@@ -51,7 +51,7 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     apply_gradient_squared_norms_kernel<<<grid_size, block_size>>>(out.data());
@@ -65,7 +65,7 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     apply_squared_norms_kernel<<<grid_size, block_size>>>(out.data(), in.data());
     return out;
@@ -76,7 +76,7 @@ namespace DO { namespace Shakti {
     MultiArray<float, 2> out{ in.sizes() };
 
     const auto block_size = default_block_size_2d();
-    const auto grid_size = default_grid_size_2d(out);
+    const auto grid_size = grid_size_2d(out);
 
     SHAKTI_SAFE_CUDA_CALL(cudaBindTextureToArray(in_float_texture, in));
     apply_laplacian_kernel<<<grid_size, block_size>>>(out.data());

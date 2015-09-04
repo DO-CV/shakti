@@ -28,10 +28,10 @@ namespace DO { namespace Shakti {
     const Vector2i p{ coords<2>() };
 
     auto convolved_value = T{ 0 };
-    auto kernel_radius = convolution_kernel_size / 2;
+    auto kernel_radius = kernel_size / 2;
 #pragma unroll
-    for (int i = 0; i < convolution_kernel_size; ++i)
-      convolved_value += tex2D(in_float_texture, p.x() - kernel_radius + i, p.y()) * convolution_kernel[i];
+    for (int i = 0; i < kernel_size; ++i)
+      convolved_value += tex2D(in_float_texture, p.x() - kernel_radius + i, p.y()) * kernel[i];
     dst[i] = convolved_value;
   }
 
@@ -43,10 +43,10 @@ namespace DO { namespace Shakti {
     const auto p = coords<2>();
 
     auto convolved_value = T{ 0 };
-    auto kernel_radius = convolution_kernel_size / 2;
+    auto kernel_radius = kernel_size / 2;
 #pragma unroll
-    for (int i = 0; i < convolution_kernel_size; ++i)
-      convolved_value += tex2D(in_float_texture, p.x(), p.y() - kernel_radius + i) * convolution_kernel[i];
+    for (int i = 0; i < kernel_size; ++i)
+      convolved_value += tex2D(in_float_texture, p.x(), p.y() - kernel_radius + i) * kernel[i];
     dst[i] = convolved_value;
   }
 
