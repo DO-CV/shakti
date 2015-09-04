@@ -12,7 +12,6 @@
 #include <math_constants.h>
 
 #include <DO/Shakti/ImageProcessing.hpp>
-#include <DO/Shakti/ImageProcessing/Differential.hpp>
 #include <DO/Shakti/ImageProcessing/Kernels/Globals.hpp>
 
 #include <DO/Shakti/MultiArray.hpp>
@@ -124,7 +123,7 @@ namespace DO { namespace Shakti {
     {
       for (int u = -rounded_r; u <= rounded_r; ++u)
       {
-        const auto weight = exp(-(u*u + v*v) / (2.f*pow(N / 2.f, 2)));
+        const auto weight = exp(-(u*u + v*v) / (2.f*powf(N / 2.f, 2)));
         auto grad = tex2D(in_float2_texture, x + u, y + v);
         auto mag = grad.x;
         auto ori = grad.y;
@@ -146,7 +145,7 @@ namespace DO { namespace Shakti {
       h.normalize();
       h *= 512.f;
     }
-    
+
 #pragma unroll
     for (int i = 0; i < Dim; ++i)
       h[i] = min(h[i], 255.f);
