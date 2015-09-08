@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+set(DO_Shakti_VERSION 0.1.0)
+
 project(Shakti)
 
 if (POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif ()
 
-option(DO_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
-option(DO_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
+option(SHAKTI_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
+option(SHAKTI_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 
 # Set CMake module path.
 if (WIN32)
@@ -22,7 +24,6 @@ list(APPEND CMAKE_MODULE_PATH
 # Find third-party libraries.
 find_package(CUDA 7.0 REQUIRED)
 find_package(DO_Sara COMPONENTS Core Graphics ImageIO VideoIO REQUIRED)
-
 
 # Use custom CMake macros.
 include(do_convenience_macros)
@@ -44,11 +45,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 add_subdirectory(third_party)
 add_subdirectory(src)
 
-if (DO_BUILD_TESTS)
+if (SHAKTI_BUILD_TESTS)
   enable_testing()
   add_subdirectory(test)
 endif ()
 
-if (DO_BUILD_SAMPLES)
+if (SHAKTI_BUILD_SAMPLES)
   add_subdirectory(examples)
 endif ()
