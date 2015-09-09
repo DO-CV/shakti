@@ -106,7 +106,7 @@ void draw_sift(const Vector128f& sift, float x, float y, float s,
       auto w_r = s*bin_scale_length;
       auto h_r = s*bin_scale_length;
 
-      draw_rect(x_r, y_r, w_r, h_r, Green8, 2);
+      draw_rect(int(x_r), int(y_r), int(w_r), int(h_r), Green8, 2);
 
       Matrix<float, 8, 1> histogram{ sift.block(j*N*O + i*O, 0, 8, 1) };
       if (histogram.sum() < 1e-6f)
@@ -114,7 +114,7 @@ void draw_sift(const Vector128f& sift, float x, float y, float s,
       histogram /= histogram.sum();
       for (int o = 0; o < O; ++o)
       {
-        auto r_b = 0.9 * s * bin_scale_length / 2.f * histogram[o];
+        auto r_b = 0.9f * s * bin_scale_length / 2.f * histogram[o];
         auto ori = 2 * float(M_PI) * o / O;
         Point2f a_ijo{ c_ij + r_b * unit_vector2(ori) };
 
