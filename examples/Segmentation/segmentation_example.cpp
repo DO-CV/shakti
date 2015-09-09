@@ -58,10 +58,9 @@ void draw_grid(const Vector2i& sizes, const Vector2i block_sizes)
 
 void demo_on_image()
 {
-  auto image_path = src_path("examples/Segmentation/Kingfisher.jpg");
-  auto image = Image<Rgba8>{};
+  auto image_path = src_path("examples/Segmentation/sunflower_field.jpg");
+  auto image = Image<Rgba32f>{};
   if (!imread(image, image_path))
-
   {
     cout << "Cannot read image:\n" << image_path << endl;
     return;
@@ -69,46 +68,30 @@ void demo_on_image()
 
   create_window(image.sizes());
   display(image);
-  draw_grid(image.sizes(), Vector2i{ 32, 32 });
-  //get_key();
 
-  Image<shakti::Vector4f, 2> rgba32f_image{ image.sizes() };
-  auto rgba = image.begin();
-  auto rgba32f = rgba32f_image.begin();
-  for (; rgba != image.end(); ++rgba, ++rgba32f)
-  {
-    for (int c = 0; c < 4; ++c)
-      (*rgba32f)[c] = (*rgba)[c] / 255.f;
-    (*rgba32f)[3] = 0.f;
-  }
+  DO::Shakti::SegmentationSLIC slic;
+  slic.set_distance_weight(1e-4f);
 
   sara::Timer t;
   t.restart();
   Image<int> labels{ image.sizes() };
-  DO::Shakti::SegmentationSLIC slic;
-  slic.set_distance_weight(1e-4f);
-  slic(labels.data(), rgba32f_image.data(), rgba32f_image.sizes().data());
+  slic(labels.data(), reinterpret_cast<shakti::Vector4f *>(image.data()),
+       image.sizes().data());
   cout << "Segmentation time = " << t.elapsed_ms() << "ms" << endl;
 
-  Image<Rgba8> segmentation{ labels.sizes() };
-  vector<Rgba64f> means64f(labels.array().maxCoeff()+1, Rgba64f::Zero());
-  vector<int> cardinality(labels.array().maxCoeff()+1, 0);
+  auto segmentation = Image<Rgba32f>{ labels.sizes() };
+  auto means = vector<Rgba32f>(labels.array().maxCoeff() + 1, Rgba32f::Zero());
+  auto cardinality = vector<int>(labels.array().maxCoeff() + 1, 0);
 
   for (int y = 0; y < segmentation.height(); ++y)
     for (int x = 0; x < segmentation.width(); ++x)
     {
-      Rgba64f col;
-      smart_convert_color(image(x, y), col);
-      means64f[labels(x, y)] += col;
+      means[labels(x, y)] += image(x, y);
       ++cardinality[labels(x, y)];
     }
 
-  std::vector<Rgba8> means(means64f.size());
-  for (int i = 0; i < means64f.size(); ++i)
-  {
-    means64f[i] /= cardinality[i];
-    smart_convert_color(means64f[i], means[i]);
-  }
+  for (size_t i = 0; i < means.size(); ++i)
+     means[i] /= cardinality[i];
 
   for (int y = 0; y < segmentation.height(); ++y)
     for (int x = 0; x < segmentation.width(); ++x)
@@ -116,6 +99,7 @@ void demo_on_image()
 
   display(segmentation);
   get_key();
+  close_window();
 }
 
 void demo_on_video()
@@ -124,63 +108,55 @@ void demo_on_video()
   devices.front().make_current_device();
   cout << devices.front() << endl;
 
-  VideoStream video_stream{
-#ifdef _WIN32
-    "C:/Users/David/Desktop/GitHub/sara/examples/VideoIO/orion_1.mpg"
-#else
-    "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg"
-#endif
-  };
+  VideoStream video_stream{ src_path("examples/Segmentation/orion_1.mpg") };
   auto video_frame_index = int{ 0 };
   auto video_frame = Image<Rgb8>{};
+
+  auto rgba32f_image = Image<Rgba32f>{};
+  auto labels = Image<int>{};
+  auto segmentation = Image<Rgba32f>{};
+  auto means = vector<Rgba32f>{};
+  auto cardinality = vector<int>{};
+
+
+  shakti::SegmentationSLIC slic;
+  slic.set_distance_weight(1e-4f);
 
   while (video_stream.read(video_frame))
   {
     cout << "[Read frame] " << video_frame_index << "" << endl;
 
-    video_frame = enlarge(video_frame, Vector2i{ 640, 480 });
-    if (!active_window())
-    {
-      create_window(video_frame.sizes());
-    }
+#ifdef _WIN32
+    // For some reason, if I don't resize the image, it crashes on windows...
+    video_frame = enlarge(video_frame, 1.5);
+#endif
+    rgba32f_image = video_frame.convert<Rgba32f>();
 
-    Image<shakti::Vector4f, 2> rgba32f_image{ video_frame.sizes() };
-    auto rgba = video_frame.begin();
-    auto rgba32f = rgba32f_image.begin();
-    for (; rgba != video_frame.end(); ++rgba, ++rgba32f)
-    {
-      for (int i = 0; i < 3; ++i)
-        (*rgba32f)[i] = (*rgba)[i] / 255.f;
-      (*rgba32f)[3] = 0.f;
-    }
+    if (!active_window())
+      create_window(video_frame.sizes());
 
     sara::Timer t;
     t.restart();
-    Image<int> labels{ video_frame.sizes() };
-    DO::Shakti::SegmentationSLIC slic;
-    slic.set_distance_weight(1e-4f);
-    slic(labels.data(), rgba32f_image.data(), rgba32f_image.sizes().data());
+    labels.resize(video_frame.sizes());
+    slic(labels.data(),
+         reinterpret_cast<shakti::Vector4f *>(rgba32f_image.data()),
+         rgba32f_image.sizes().data());
     cout << "Segmentation time = " << t.elapsed_ms() << "ms" << endl;
 
-    Image<Rgba8> segmentation{ labels.sizes() };
-    vector<Rgba64f> means64f(labels.array().maxCoeff() + 1, Rgba64f::Zero());
-    vector<int> cardinality(labels.array().maxCoeff() + 1, 0);
+    segmentation.resize(video_frame.sizes());
+    means = vector<Rgba32f>(labels.array().maxCoeff() + 1, Rgba32f::Zero());
+    cardinality = vector<int>(labels.array().maxCoeff() + 1, 0);
 
     for (int y = 0; y < segmentation.height(); ++y)
+    {
       for (int x = 0; x < segmentation.width(); ++x)
       {
-        Rgba64f col;
-        smart_convert_color(video_frame(x, y), col);
-        means64f[labels(x, y)] += col;
+        means[labels(x, y)] += rgba32f_image(x, y);
         ++cardinality[labels(x, y)];
       }
-
-    std::vector<Rgba8> means(means64f.size());
-    for (int i = 0; i < means64f.size(); ++i)
-    {
-      means64f[i] /= cardinality[i];
-      smart_convert_color(means64f[i], means[i]);
     }
+    for (int i = 0; i < means.size(); ++i)
+      means[i] /= cardinality[i];
 
     for (int y = 0; y < segmentation.height(); ++y)
       for (int x = 0; x < segmentation.width(); ++x)
@@ -197,6 +173,7 @@ GRAPHICS_MAIN()
 {
   try
   {
+    demo_on_image();
     demo_on_video();
   }
   catch (exception& e)
