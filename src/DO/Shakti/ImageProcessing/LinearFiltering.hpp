@@ -14,16 +14,20 @@
 
 #include <vector>
 
+#include <DO/Shakti/Defines.hpp>
+
 #include <DO/Shakti/MultiArray/MultiArray.hpp>
 #include <DO/Shakti/MultiArray/TextureArray.hpp>
 
 
 namespace DO { namespace Shakti {
 
+  DO_SHAKTI_EXPORT
   void apply_row_based_convolution(
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes);
 
+  DO_SHAKTI_EXPORT
   void apply_column_based_convolution(
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes);
@@ -34,7 +38,7 @@ namespace DO { namespace Shakti {
 
 namespace DO { namespace Shakti {
 
-  class GaussianFilter
+  class DO_SHAKTI_EXPORT GaussianFilter
   {
   public:
     GaussianFilter(float sigma, int truncation_factor = 4.f)

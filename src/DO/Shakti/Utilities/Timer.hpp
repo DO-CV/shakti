@@ -14,10 +14,12 @@
 
 #include <driver_types.h>
 
+#include <DO/Shakti/Defines.hpp>
+
 
 namespace DO { namespace Shakti {
 
-  class Timer
+  class DO_SHAKTI_EXPORT Timer
   {
   public:
     Timer();

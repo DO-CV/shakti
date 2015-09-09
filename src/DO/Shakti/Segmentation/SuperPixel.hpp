@@ -4,6 +4,8 @@
 #include <memory>
 #include <tuple>
 
+#include <DO/Shakti/Defines.hpp>
+
 #include <DO/Shakti/MultiArray/Matrix.hpp>
 #include <DO/Shakti/MultiArray/MultiArray.hpp>
 
@@ -28,7 +30,7 @@ namespace DO { namespace Shakti {
     int num_points;
   };
 
-  class SegmentationSLIC
+  class DO_SHAKTI_EXPORT SegmentationSLIC
   {
   public:
     //! \brief Constructor.

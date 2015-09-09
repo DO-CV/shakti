@@ -8,7 +8,6 @@ target_link_libraries(
   image_processing_example
   ${DO_Sara_LIBRARIES}
   DO_Shakti_ImageProcessing
-  DO_Shakti_MultiArray
   DO_Shakti_Utilities
 )
 if (UNIX)

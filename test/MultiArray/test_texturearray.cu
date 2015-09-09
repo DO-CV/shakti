@@ -55,7 +55,7 @@ TEST(TestCudaArray, test_constructor)
   float out[w * h];
   in_array.copy_to_host(out) ;
   EXPECT_TRUE(equal(in, in + w*h, out));
-  check(out, { w, h });
+  //check(out, { w, h });
 }
 
 TEST(TestCudaArray, test_operation_from_cuda_array_to_multiarray)

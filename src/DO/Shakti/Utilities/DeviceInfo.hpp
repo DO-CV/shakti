@@ -23,10 +23,12 @@
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
 
+#include <DO/Shakti/Defines.hpp>
+
 
 namespace DO { namespace Shakti {
 
-  class Device
+  class DO_SHAKTI_EXPORT Device
   {
   public: /* API. */
     int convert_sm_version_to_cores(int major, int minor) const;

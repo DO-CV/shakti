@@ -134,13 +134,7 @@ GRAPHICS_MAIN()
     devices.front().make_current_device();
     cout << devices.front() << endl;
 
-    VideoStream video_stream{
-#ifdef _WIN32
-      "C:/Users/David/Desktop/GitHub/sara/examples/VideoIO/orion_1.mpg"
-#else
-      "/home/david/Desktop/GitHub/DO-CV/sara/examples/VideoIO/orion_1.mpg"
-#endif
-    };
+    VideoStream video_stream{ src_path("examples/Segmentation/orion_1.mpg") };
     auto video_frame_index = int{ 0 };
     auto video_frame = Image<Rgb8>{};
 
