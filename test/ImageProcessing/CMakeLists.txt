@@ -9,7 +9,6 @@ find_package(DO_Sara COMPONENTS Core ImageProcessing REQUIRED)
 
 file(GLOB test_imageprocessing_SOURCE_FILES FILES test_*.cpp)
 
-
 foreach (file ${test_imageprocessing_SOURCE_FILES})
   get_filename_component(filename "${file}" NAME_WE)
   add_executable(${filename} ${file})

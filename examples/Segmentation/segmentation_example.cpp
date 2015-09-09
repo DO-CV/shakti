@@ -94,7 +94,7 @@ void demo_on_image()
     }
 
   for (size_t i = 0; i < means.size(); ++i)
-     means[i] /= cardinality[i];
+     means[i] /= float(cardinality[i]);
 
   for (int y = 0; y < segmentation.height(); ++y)
     for (int x = 0; x < segmentation.width(); ++x)
@@ -161,7 +161,7 @@ void demo_on_video()
     }
 
     for (size_t i = 0; i < means.size(); ++i)
-      means[i] /= cardinality[i];
+      means[i] /= float(cardinality[i]);
 
     for (int y = 0; y < segmentation.height(); ++y)
       for (int x = 0; x < segmentation.width(); ++x)
