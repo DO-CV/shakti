@@ -1,6 +1,12 @@
 shakti_dissect_version(${DO_Shakti_VERSION})
 
 
+# Set output directories.
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+
 # Create the following libraries.
 set(DO_Shakti_LIBRARIES MultiArray ImageProcessing Segmentation Utilities)
 foreach (library ${DO_Shakti_LIBRARIES})
@@ -30,9 +36,3 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     COMPONENT Sources)
   set(CPACK_COMPONENT_Sources_REQUIRED 1)
 endif ()
-
-
-# Set output directories.
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
