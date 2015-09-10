@@ -258,6 +258,7 @@ function (shakti_add_example)
    set_target_properties(
      ${EXAMPLE_NAME} PROPERTIES
      COMPILE_FLAGS ${DO_DEFINITIONS}
+     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
    )
 
    # Create an auxilliary library for CUDA based code.
