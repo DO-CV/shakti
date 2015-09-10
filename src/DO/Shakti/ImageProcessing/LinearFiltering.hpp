@@ -38,7 +38,7 @@ namespace DO { namespace Shakti {
 
 namespace DO { namespace Shakti {
 
-  class DO_SHAKTI_EXPORT GaussianFilter
+  class GaussianFilter
   {
   public:
     GaussianFilter(float sigma, int truncation_factor = 4.f)
@@ -47,10 +47,13 @@ namespace DO { namespace Shakti {
       set_sigma(sigma);
     }
 
+    DO_SHAKTI_EXPORT
     void set_sigma(float sigma);
 
+    DO_SHAKTI_EXPORT
     void operator()(float *out, const float *in, const int *sizes) const;
 
+    DO_SHAKTI_EXPORT
     MultiArray<float, 2> operator()(TextureArray<float>& in) const;
 
   private:

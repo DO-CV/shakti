@@ -28,6 +28,7 @@
 
 namespace DO { namespace Shakti {
 
+  //! @brief Device class.
   class DO_SHAKTI_EXPORT Device
   {
   public: /* API. */
@@ -43,9 +44,7 @@ namespace DO { namespace Shakti {
 
     void reset();
 
-    friend std::ostream& operator<<(std::ostream& os, const Device& info);
-
-    int warp_size() const { return properties.warpSize; }
+    int warp_size() const;
 
   public: /* data members. */
     int id;
@@ -54,11 +53,19 @@ namespace DO { namespace Shakti {
     cudaDeviceProp properties;
   };
 
+  //! @brief Output stream operator.
+  DO_SHAKTI_EXPORT
+  std::ostream& operator<<(std::ostream& os, const Device& info);
 
+
+  //! @{
+  //! @brief Device getters.
+  DO_SHAKTI_EXPORT
   int get_num_cuda_devices();
 
+  DO_SHAKTI_EXPORT
   std::vector<Device> get_devices();
-
+  //! @}
 
 } /* namespace Shakti */
 } /* namespace DO */

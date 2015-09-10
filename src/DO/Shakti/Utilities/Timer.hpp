@@ -35,8 +35,10 @@ namespace DO { namespace Shakti {
     cudaEvent_t _stop;
   };
 
+  DO_SHAKTI_EXPORT
   void tic();
 
+  DO_SHAKTI_EXPORT
   void toc(const char *what);
 
 } /* namespace Shakti */

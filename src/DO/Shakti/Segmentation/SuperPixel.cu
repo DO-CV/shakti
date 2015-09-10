@@ -236,6 +236,11 @@ namespace DO { namespace Shakti {
     _image_grid_sizes = grid_size_2d(sizes, padded_width, _image_block_sizes);
   }
 
+  void SegmentationSLIC::set_image_sizes(const MultiArray<Vector4f, 2>& device_image)
+  {
+    set_image_sizes(device_image.sizes(), device_image.padded_width());
+  }
+
   void SegmentationSLIC::set_distance_weight(float distance_weight)
   {
     SHAKTI_SAFE_CUDA_CALL(cudaMemcpyToSymbol(

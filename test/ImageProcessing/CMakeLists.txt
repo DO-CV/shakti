@@ -18,7 +18,7 @@ foreach (file ${test_imageprocessing_SOURCE_FILES})
     TARGET ${filename}
     PROPERTY
     FOLDER "DO Shakti Tests/ImageProcessing")
-  add_test( ${filename} ${filename})
+  add_test(${filename} ${CMAKE_BINARY_DIR}/bin/${filename})
 
   set_target_properties(
     ${filename}

@@ -49,10 +49,7 @@ namespace DO { namespace Shakti {
     //! \brief Setters.
     void set_image_sizes(const Vector2i& sizes, int padded_width);
 
-    void set_image_sizes(const MultiArray<Vector4f, 2>& device_image)
-    {
-      set_image_sizes(device_image.sizes(), device_image.padded_width());
-    }
+    void set_image_sizes(const MultiArray<Vector4f, 2>& device_image);
 
     void set_distance_weight(float weight);
     //! @}
