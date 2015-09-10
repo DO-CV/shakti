@@ -1,6 +1,15 @@
-if(POLICY CMP0020)
+if (POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif()
+
+
+find_package(CUDA 7.0 REQUIRED)
+include_directories(${CUDA_TOOLKIT_INCLUDE})
+
+# Load DO-specific macros
+include(shakti_configure_nvcc_compiler)
+include(shakti_macros)
+include(shakti_version)
 
 
 # Debug message.
@@ -9,8 +18,8 @@ shakti_step_message("FindDO_Shakti running for project '${PROJECT_NAME}'")
 
 # 'find_package(DO_Shakti COMPONENTS Core Graphics ... REQUIRED)' is called.
 set (DO_Shakti_ALL_COMPONENTS ImageProcessing MultiArray Utilities Segmentation)
-if (DO_Shakti_FIND_COMPONENTS)
-  set(DO_Shakti_USE_COMPONENTS ${SHAKTI_ALL_COMPONENTS})
+if (NOT DO_Shakti_FIND_COMPONENTS)
+  set(DO_Shakti_USE_COMPONENTS ${DO_Shakti_ALL_COMPONENTS})
 else ()
   set(DO_Shakti_USE_COMPONENTS "")
   foreach (component ${DO_Shakti_FIND_COMPONENTS})
@@ -31,6 +40,10 @@ find_path(
   PATHS
   /usr/include /usr/local/include
   "C:/Program Files/DO-Shakti/include")
+
+
+# Remove header-only libraries.
+list (REMOVE_ITEM DO_Shakti_USE_COMPONENTS "MultiArray")
 
 
 # Find compiled libraries.
@@ -83,15 +96,6 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
   endif ()
 
 endforeach()
-
-
-# Load DO-specific macros
-include(shakti_macros)
-include(shakti_configure_nvcc_compiler)
-
-
-# Specify DO-Shakti version.
-include(DO_Shakti_version)
 
 
 # List the compile flags needed by DO-Shakti.
