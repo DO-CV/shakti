@@ -32,4 +32,3 @@ CMakeLists.txt.user
 *.exe
 *.out
 *.app
-examples/Segmentation/SuperPixel.cpp

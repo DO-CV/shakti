@@ -12,12 +12,14 @@
 #ifndef DO_SHAKTI_IMAGEPROCESSING_SIFT_HPP
 #define DO_SHAKTI_IMAGEPROCESSING_SIFT_HPP
 
+#include <DO/Shakti/Defines.hpp>
+
 #include <DO/Shakti/MultiArray.hpp>
 
 
 namespace DO { namespace Shakti {
 
-  class DenseSiftComputer
+  class DO_SHAKTI_EXPORT DenseSiftComputer
   {
   public:
     DenseSiftComputer();

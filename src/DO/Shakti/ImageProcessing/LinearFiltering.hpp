@@ -14,16 +14,20 @@
 
 #include <vector>
 
+#include <DO/Shakti/Defines.hpp>
+
 #include <DO/Shakti/MultiArray/MultiArray.hpp>
 #include <DO/Shakti/MultiArray/TextureArray.hpp>
 
 
 namespace DO { namespace Shakti {
 
+  DO_SHAKTI_EXPORT
   void apply_row_based_convolution(
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes);
 
+  DO_SHAKTI_EXPORT
   void apply_column_based_convolution(
     float *out, const float *in, const float *kernel,
     int kernel_size, const int *sizes);
@@ -43,10 +47,13 @@ namespace DO { namespace Shakti {
       set_sigma(sigma);
     }
 
+    DO_SHAKTI_EXPORT
     void set_sigma(float sigma);
 
+    DO_SHAKTI_EXPORT
     void operator()(float *out, const float *in, const int *sizes) const;
 
+    DO_SHAKTI_EXPORT
     MultiArray<float, 2> operator()(TextureArray<float>& in) const;
 
   private:

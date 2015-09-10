@@ -3,7 +3,7 @@
 #include <DO/Sara/FeatureDescriptors.hpp>
 
 
-TEST(TestCUDADenseSIFT, test_dense_sift_cuda)
+TEST(TestDenseSIFT, test_dense_sift_cuda)
 {
 
 }

@@ -14,10 +14,12 @@
 
 #include <driver_types.h>
 
+#include <DO/Shakti/Defines.hpp>
+
 
 namespace DO { namespace Shakti {
 
-  class Timer
+  class DO_SHAKTI_EXPORT Timer
   {
   public:
     Timer();
@@ -33,8 +35,10 @@ namespace DO { namespace Shakti {
     cudaEvent_t _stop;
   };
 
+  DO_SHAKTI_EXPORT
   void tic();
 
+  DO_SHAKTI_EXPORT
   void toc(const char *what);
 
 } /* namespace Shakti */

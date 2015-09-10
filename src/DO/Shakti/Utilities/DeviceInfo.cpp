@@ -238,6 +238,11 @@ namespace DO { namespace Shakti {
     SHAKTI_SAFE_CUDA_CALL(cudaDeviceReset());
   }
 
+  int Device::warp_size() const
+  {
+    return properties.warpSize;
+  }
+
   std::ostream& operator<<(std::ostream& os, const Device& info)
   {
     os << info.formatted_string() << "\n";
@@ -275,6 +280,5 @@ namespace DO { namespace Shakti {
     }
     return devices;
   }
-
 } /* namespace Shakti */
 } /* namespace DO */

@@ -66,12 +66,15 @@ void demo_on_image()
     return;
   }
 
+  // Display the image.
   create_window(image.sizes());
   display(image);
 
-  DO::Shakti::SegmentationSLIC slic;
+  // Setup the image segmenter.
+  shakti::SegmentationSLIC slic;
   slic.set_distance_weight(1e-4f);
 
+  // Run superpixel segmentation.
   sara::Timer t;
   t.restart();
   Image<int> labels{ image.sizes() };
@@ -91,12 +94,13 @@ void demo_on_image()
     }
 
   for (size_t i = 0; i < means.size(); ++i)
-     means[i] /= cardinality[i];
+     means[i] /= float(cardinality[i]);
 
   for (int y = 0; y < segmentation.height(); ++y)
     for (int x = 0; x < segmentation.width(); ++x)
       segmentation(x, y) = means[labels(x, y)];
 
+  // Display segmentation results.
   display(segmentation);
   get_key();
   close_window();
@@ -155,8 +159,9 @@ void demo_on_video()
         ++cardinality[labels(x, y)];
       }
     }
-    for (int i = 0; i < means.size(); ++i)
-      means[i] /= cardinality[i];
+
+    for (size_t i = 0; i < means.size(); ++i)
+      means[i] /= float(cardinality[i]);
 
     for (int y = 0; y < segmentation.height(); ++y)
       for (int x = 0; x < segmentation.width(); ++x)
@@ -173,7 +178,7 @@ GRAPHICS_MAIN()
 {
   try
   {
-    demo_on_image();
+    //demo_on_image();
     demo_on_video();
   }
   catch (exception& e)

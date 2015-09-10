@@ -11,7 +11,7 @@ if (UNIX AND DO_BUILD_SHARED_LIBS)
 endif ()
 
 
-if (DO_BUILD_TESTS)
+if (SHAKTI_BUILD_TESTS)
   message(STATUS "  - Google Test")
   add_subdirectory(gtest)
   set_property(TARGET gtest PROPERTY FOLDER ${THIRDPARTY_FOLDER_NAME})
