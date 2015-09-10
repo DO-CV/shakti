@@ -44,8 +44,11 @@ find_package(CUDA 7.0 REQUIRED)
 find_package(DO_Sara COMPONENTS Core Graphics ImageIO VideoIO REQUIRED)
 
 # Use custom CMake macros.
+set(DO_Shakti_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(DO_Shakti_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti)
 include(shakti_macros)
 include(shakti_configure_nvcc_compiler)
+
 
 # ============================================================================ #
 # Build the following directories.
@@ -76,3 +79,9 @@ endif ()
 if (SHAKTI_BUILD_SAMPLES)
   add_subdirectory(examples)
 endif ()
+
+
+# ============================================================================ #
+# Install the libraries.
+include(shakti_installation_settings)
+include(CPack)

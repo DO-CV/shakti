@@ -135,10 +135,10 @@ macro(shakti_glob_directory _curdir)
   list(APPEND DO_Shakti_${curdir_name}_HEADER_FILES
        ${DO_Shakti_${curdir_name}_MASTER_HEADER})
 
-  message(STATUS "Master Header:\n ${DO_Shakti_${curdir_name}_MASTER_HEADER}")
-  message(STATUS "Header file list:\n ${DO_Shakti_${curdir_name}_HEADER_FILES}")
-  message(STATUS "C++ Source file list:\n ${DO_Shakti_${curdir_name}_CPP_FILES}")
-  message(STATUS "CUDA Source file list:\n ${DO_Shakti_${curdir_name}_CU_FILES}")
+  #message(STATUS "Master Header:\n ${DO_Shakti_${curdir_name}_MASTER_HEADER}")
+  #message(STATUS "Header file list:\n ${DO_Shakti_${curdir_name}_HEADER_FILES}")
+  #message(STATUS "C++ Source file list:\n ${DO_Shakti_${curdir_name}_CPP_FILES}")
+  #message(STATUS "CUDA Source file list:\n ${DO_Shakti_${curdir_name}_CU_FILES}")
 endmacro()
 
 

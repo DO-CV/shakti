@@ -1,0 +1,13 @@
+DO-Shakti is licensed with MPL2. See COPYING.MPL2 and these links:
+  http://www.mozilla.org/MPL/2.0/
+  http://www.mozilla.org/MPL/2.0/FAQ.html
+
+
+DO-Shakti uses the following third-party libraries:
+- DO-Sara
+  DO-Sara is a C++ easy-to-use C++ computer vision Library
+  Mozilla Public License v. 2 (MPL2)
+  https://github.com/DO-CV/sara
+
+- CUDA
+  https://developer.nvidia.com/about-cuda
