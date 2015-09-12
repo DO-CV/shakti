@@ -96,6 +96,7 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
   endif ()
 
 endforeach()
+list(APPEND DO_Shakti_LIBRARIES ${CUDA_CUDART_LIBRARY})
 
 
 # List the compile flags needed by DO-Shakti.
