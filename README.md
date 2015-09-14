@@ -1,5 +1,5 @@
-Shakti: C++11/CUDA-accelerated Computer Vision Algorithms
-=========================================================
+Shakti: CUDA Computer Vision Algorithms
+=======================================
 
 Shakti focuses on:
 
@@ -15,7 +15,7 @@ Shakti is licensed with the [Mozilla Public License version 2.0](https://github.
 Some parts of the Shakti depend on Sara (https://github.com/DO-CV/Sara).
 
 Shakti provides the following classical algorithms:
-- Simple matrix data structures that is compatible for C++ and CUDA as Eigen does not play well with CUDA yet;
+- Simple matrix data structures that are compatible with CUDA as Eigen does not play well with CUDA yet;
 - ND-array data structures that wraps parts of the CUDA API for ease of reuse;
 - Basic linear filtering (gradient, laplacian, gaussian convolution, separable convolution);
 - Dense SIFT;
