@@ -1,7 +1,7 @@
 include_directories(${DO_Sara_ThirdParty_DIR}/gtest/include)
 
 message(STATUS "")
-do_step_message("Appending test projects:")
+shakti_step_message("Appending test projects:")
 
 if (WIN32 AND DO_USE_VLD)
   find_package(VisualLeakDetector)

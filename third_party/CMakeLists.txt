@@ -1,5 +1,5 @@
 message(STATUS "")
-do_step_message("Appending third-party libraries:")
+shakti_step_message("Appending third-party libraries:")
 
 set(THIRDPARTY_FOLDER_NAME "DO Shakti Third-Party")
 
