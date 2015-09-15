@@ -10,6 +10,3 @@ target_link_libraries(
   DO_Shakti_Segmentation
   DO_Shakti_Utilities
 )
-if (UNIX)
-  target_link_libraries(segmentation_example gcov)
-endif ()

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.12) 
+cmake_minimum_required(VERSION 2.8.12)
 set(DO_Shakti_VERSION 0.1.0)
 
 project(Shakti)
@@ -41,7 +41,8 @@ list(APPEND CMAKE_MODULE_PATH
 
 # Find third-party libraries.
 find_package(CUDA 7.0 REQUIRED)
-find_package(DO_Sara COMPONENTS Core Graphics ImageIO VideoIO REQUIRED)
+find_package(DO_Sara COMPONENTS
+  Core Graphics FeatureDescriptors ImageIO VideoIO REQUIRED)
 
 # Use custom CMake macros.
 set(DO_Shakti_DIR ${CMAKE_CURRENT_SOURCE_DIR})
