@@ -9,6 +9,7 @@ endif ()
 
 # List of build options.
 option(SHAKTI_BUILD_SHARED_LIBS "Build shared libraries" OFF)
+option(SHAKTI_BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(SHAKTI_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
 option(SHAKTI_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 
@@ -27,6 +28,7 @@ set(CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Build type options are: Debug, Release")
 
 set(BUILD_SHARED_LIBS ${SHAKTI_BUILD_SHARED_LIBS})
+
 
 # ============================================================================ #
 # State the list of dependencies.
@@ -50,7 +52,6 @@ set(DO_Shakti_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti)
 include(shakti_macros)
 include(shakti_configure_nvcc_compiler)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
 
 # ============================================================================ #
 # Build the following directories.
@@ -65,7 +66,12 @@ include_directories(
 # Group projects by category.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# List the compile flags needed by .
+# Turn off some annoying compilers for GCC
+if (UNIX)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+endif ()
+
+# Add some more compilation flags to build static libraries.
 if (SHAKTI_USE_STATIC_LIBS OR NOT SHAKTI_BUILD_SHARED_LIBS)
   add_definitions("-DDO_SHAKTI_STATIC")
 endif ()

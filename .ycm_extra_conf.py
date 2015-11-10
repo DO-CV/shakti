@@ -1,6 +1,9 @@
 ﻿import os
+
 import ycm_core
+
 from clang_helpers import PrepareClangFlags
+
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
 # compile_commands.json file to use that instead of 'flags'. See here for
@@ -38,30 +41,41 @@ flags = [
 "-DQT_WIDGETS_LIB",
 "-DQT_XML_LIB",
 "-fPIE",
-# System include
-"-I", "/usr/include/",
-"-I", "/usr/lib/gcc/x86_64-linux-gnu/4.8/include",
-"-I", "/usr/lib/gcc/x86_64-linux-gnu/4.9/include",
+# System-wide include directories
+"-I", "/usr/include",
 # Qt5 header directories.
 "-I", "/usr/include/x86_64-linux-gnu/qt5",
-"-I", "/usr/include/x86_64-linux-gnu/qt5/QtQuick",
-"-I", "/usr/include/x86_64-linux-gnu/qt5/QtQml",
-"-I", "/usr/include/x86_64-linux-gnu/qt5/QtNetwork",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtConcurrent",
 "-I", "/usr/include/x86_64-linux-gnu/qt5/QtCore",
 "-I", "/usr/include/x86_64-linux-gnu/qt5/QtGui",
-"-I", "/usr/include/x86_64-linux-gnu/qt5/QtConcurrent",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtNetwork",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtQuick",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtQml",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtTest",
+"-I", "/usr/include/x86_64-linux-gnu/qt5/QtSql",
 "-I", "/usr/include/x86_64-linux-gnu/qt5/QtWidgets",
 "-I", "/usr/include/x86_64-linux-gnu/qt5/QtXml",
-"-I", "/usr/include/x86_64-linux-gnu/qt5/QtSql",
 "-I", "/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64",
 # CUDA header directories.
 "-I", "/usr/local/cuda/include",
 # Current header directories.
 "-I", "./src",
 # Third-party header directories.
-"-I", "./third_party/eigen",
-"-I", "./third_party/gtest/include"
+"-I", "./third_party/gtest/include",
+"-I", "./third_party/json/src",
+"-I", "./third_party/pugixml/src"
 ]
+
+if 'VIRTUAL_ENV' in os.environ:
+    flags += ["-I", os.environ['VIRTUAL_ENV'] + "/include/python2.7"]
+    flags += ["-I", os.environ['VIRTUAL_ENV'] + "/include/python3.4m"]
+
+try:
+    from numpy import get_include
+    flags += ["-I", get_include()]
+except ImportError:
+    pass
+
 
 if compilation_database_folder:
   database = ycm_core.CompilationDatabase( compilation_database_folder )

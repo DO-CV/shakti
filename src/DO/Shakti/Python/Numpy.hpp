@@ -9,13 +9,30 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 // ========================================================================== //
 
-#ifndef DO_SHAKTI_IMAGEPROCESSING_HPP
-#define DO_SHAKTI_IMAGEPROCESSING_HPP
+#ifndef DO_SHAKTI_PYTHON_NUMPY_HPP
+#define DO_SHAKTI_PYTHON_NUMPY_HPP
 
-#include <DO/Shakti/ImageProcessing/Differential.hpp>
-#include <DO/Shakti/ImageProcessing/Histogram.hpp>
-#include <DO/Shakti/ImageProcessing/LinearFiltering.hpp>
-#include <DO/Shakti/ImageProcessing/SIFT.hpp>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+
+#include <Python.h>
+
+#include <numpy/ndarrayobject.h>
 
 
-#endif /* DO_SHAKTI_IMAGEPROCESSING_HPP */
+inline
+#if (PY_VERSION_HEX < 0x03000000)
+void import_numpy_array()
+#else
+void * import_numpy_array()
+#endif
+{
+  /* Initialise numpy API and use 2/3 compatible return */
+  import_array();
+
+#if (PY_VERSION_HEX >= 0x03000000)
+  return NULL;
+#endif
+}
+
+
+#endif /* DO_SHAKTI_PYTHON_NUMPY_HPP */

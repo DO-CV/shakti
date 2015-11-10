@@ -19,6 +19,12 @@ foreach (library ${DO_Shakti_LIBRARIES})
 endforeach ()
 
 
+# Python bindings.
+if (SHAKTI_BUILD_PYTHON_BINDINGS)
+  add_subdirectory(DO/Shakti/Python)
+endif ()
+
+
 # Install licenses and source files.
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   install(FILES ${DO_Shakti_DIR}/COPYING.README
