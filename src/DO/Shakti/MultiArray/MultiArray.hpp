@@ -22,7 +22,7 @@
 
 namespace DO { namespace Shakti {
 
-  //! \brief ND-array class.
+  //! @brief ND-array class.
   template <typename T, int N, typename Strides = RowMajorStrides>
   class MultiArray : public MultiArrayView<T, N, Strides>
   {
@@ -46,7 +46,7 @@ namespace DO { namespace Shakti {
 
   public:
     //! @{
-    //! \brief Constructor.
+    //! @brief Constructor.
     __host__
     inline MultiArray() = default;
 
@@ -115,18 +115,14 @@ namespace DO { namespace Shakti {
       else if (N == 3)
       {
         cudaMemcpy3DParms params = { 0 };
-        params.srcPtr.ptr = (void *)host_data;
-        params.srcPtr.pitch = sizes[0] * sizeof(T);
-        params.srcPtr.xsize = sizes[0];
-        params.srcPtr.ysize = sizes[1];
 
-        params.dstPtr.ptr = reinterpret_cast<void *>(_data);
-        params.dstPtr.pitch = _pitch;
-        params.dstPtr.xsize = sizes[0];
-        params.dstPtr.ysize = sizes[1];
-
+        params.srcPtr = make_cudaPitchedPtr(const_cast<T *>(host_data),
+                                            sizes[0] * sizeof(T),
+                                            sizes[0], sizes[1]);
+        params.dstPtr = make_cudaPitchedPtr(reinterpret_cast<void *>(_data),
+                                            _pitch, sizes[0], sizes[1]);
+        params.extent = make_cudaExtent(_sizes[0]*sizeof(T), _sizes[1], _sizes[2]);
         params.kind = cudaMemcpyHostToDevice;
-        params.extent = make_cudaExtent(sizes[0], sizes[1], sizes[2]);
 
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy3D(&params));
       }
@@ -145,21 +141,21 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
-    //! \brief Assignment operator uses the copy-swap idiom.
+    //! @brief Assignment operator uses the copy-swap idiom.
     self_type& operator=(self_type other)
     {
       swap(other);
       return *this;
     }
 
-    //! \brief Destructor.
+    //! @brief Destructor.
     __host__
     inline ~MultiArray()
     {
       SHAKTI_SAFE_CUDA_CALL(cudaFree(_data));
     }
 
-    //! \brief Resize the multi-array.
+    //! @brief Resize the multi-array.
     __host__
     inline void resize(const vector_type& sizes)
     {
@@ -185,16 +181,17 @@ namespace DO { namespace Shakti {
       }
       else if (N == 3)
       {
-        cudaPitchedPtr pitched_device_ptr;
-        cudaExtent extent{ sizes[2], sizes[1], sizes[0] };
+        cudaPitchedPtr pitched_device_ptr = { 0, 0, 0, 0 };
+        auto extent = make_cudaExtent(sizes[0]*sizeof(T), sizes[1], sizes[2]);
         SHAKTI_SAFE_CUDA_CALL(cudaMalloc3D(&pitched_device_ptr, extent));
         _pitch = pitched_device_ptr.pitch;
+        *void_data = pitched_device_ptr.ptr;
       }
       else
         throw std::runtime_error{ "Unsupported dimension!" };
     }
 
-    //! \brief Swap multi-array objects.
+    //! @brief Swap multi-array objects.
     void swap(self_type& other)
     {
       using std::swap;

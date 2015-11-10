@@ -18,7 +18,7 @@
 namespace DO { namespace Shakti {
 
   //! @{
-  //! \brief Return the ND-coordinates.
+  //! @brief Return the ND-coordinates.
   template <int N>
   __device__
   inline Vector<int, N> coords()
@@ -49,7 +49,7 @@ namespace DO { namespace Shakti {
   //! @}
 
   //! @{
-  //! \brief Return grid strides.
+  //! @brief Return grid strides.
   template <int N>
   __device__
   inline Vector<int, N> grid_strides()
@@ -77,7 +77,7 @@ namespace DO { namespace Shakti {
   //! @}
 
   //! @{
-  //! \brief Return the index of the corresponding ND-coordinates.
+  //! @brief Return the index of the corresponding ND-coordinates.
   template <int N>
   __device__
   inline int offset()

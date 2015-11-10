@@ -20,7 +20,7 @@
 
 namespace DO { namespace Shakti {
 
-  //! \brief ND-array view class.
+  //! @brief ND-array view class.
   template <typename T, int N, typename Strides>
   class MultiArrayView
   {
@@ -34,7 +34,7 @@ namespace DO { namespace Shakti {
     enum { Dimension = N };
 
     //! @{
-    //! \brief STL-compatible interface.
+    //! @brief STL-compatible interface.
     using size_type = std::size_t;
     using difference_type = std::ptrdiff_t;
     using value_type = T;
@@ -47,24 +47,24 @@ namespace DO { namespace Shakti {
     //! @}
 
     //! @{
-    //! \brief Slice type.
+    //! @brief Slice type.
     using slice_type = MultiArrayView<T, N-1, Strides>;
     using const_slice_type = const MultiArrayView<T, N-1, Strides>;
     //! @}
 
     //! @{
-    //! \brief Vector type.
+    //! @brief Vector type.
     using vector_type = Vector<int, N>;
     using slice_vector_type = Vector<int, N-1>;
     //! @}
 
   public: /* methods */
-    //! \brief Default constructor.
+    //! @brief Default constructor.
     __host__ __device__
     inline MultiArrayView() = default;
 
     //! @{
-    //! \brief Constructor that wraps plain data with its known sizes.
+    //! @brief Constructor that wraps plain data with its known sizes.
     __host__ __device__
     inline MultiArrayView(value_type *data, const vector_type& sizes)
       : _data{ data }
@@ -87,21 +87,21 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
-    //! \brief Return the size vector of the MultiArray object.
+    //! @brief Return the size vector of the MultiArray object.
     __host__ __device__
     inline const vector_type& sizes() const
     {
       return _sizes;
     }
 
-    //! \brief Return the pitch size in bytes of the MultiArray object.
+    //! @brief Return the pitch size in bytes of the MultiArray object.
     __host__ __device__
     inline size_type pitch() const
     {
       return _pitch;
     }
 
-    //! \brief Return the padded width of the MultiArray object.
+    //! @brief Return the padded width of the MultiArray object.
     //! This is useful when computing the grid.
     __host__ __device__
     inline int padded_width() const
@@ -109,49 +109,49 @@ namespace DO { namespace Shakti {
       return int(pitch() / sizeof(T));
     }
 
-    //! \brief Return the number of elements in the internal data array.
+    //! @brief Return the number of elements in the internal data array.
     __host__ __device__
     inline size_type size() const
     {
       return compute_size(_sizes);
     }
 
-    //! \brief Return the i-th sizes of the multi-array.
+    //! @brief Return the i-th sizes of the multi-array.
     __host__ __device__
     inline int size(int i) const
     {
       return _sizes(i);
     }
 
-    //! \brief Return the number of rows.
+    //! @brief Return the number of rows.
     __host__ __device__
     inline int width() const
     {
       return _sizes(0);
     }
 
-    //! \brief Return the number of columns.
+    //! @brief Return the number of columns.
     __host__ __device__
     inline int height() const
     {
       return _sizes(1);
     }
 
-    //! \brief Return the depth size.
+    //! @brief Return the depth size.
     __host__ __device__
     inline int depth() const
     {
       return _sizes(2);
     }
 
-    //! \brief Return the stride vector of the MultiArray object.
+    //! @brief Return the stride vector of the MultiArray object.
     __host__ __device__
     inline const vector_type& strides() const
     {
       return _strides;
     }
 
-    //! \brief Return the stride value along the i-th dimension.
+    //! @brief Return the stride value along the i-th dimension.
     __host__ __device__
     inline int stride(int i) const
     {
@@ -159,7 +159,7 @@ namespace DO { namespace Shakti {
     }
 
     //! @{
-    //! \brief Return the array pointer.
+    //! @brief Return the array pointer.
     __host__ __device__
     inline pointer data()
     {
@@ -173,7 +173,7 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
-    //! \brief Return true/false whether the array is empty.
+    //! @brief Return true/false whether the array is empty.
     __host__ __device__
     inline bool empty() const
     {
@@ -181,7 +181,7 @@ namespace DO { namespace Shakti {
     }
 
     //! @{
-    //! \brief Return the reference to array element at given coordinates.
+    //! @brief Return the reference to array element at given coordinates.
     __host__ __device__
     inline reference operator()(const vector_type& pos)
     {
@@ -223,7 +223,7 @@ namespace DO { namespace Shakti {
     }
     //! @}
 
-    //! \brief Copy the ND-array device array to host array.
+    //! @brief Copy the ND-array device array to host array.
     //! You must allocate the array with the appropriate size.
     __host__
     inline void copy_to_host(T *host_data) const
@@ -238,28 +238,22 @@ namespace DO { namespace Shakti {
       {
         cudaMemcpy3DParms params = { 0 };
 
-        params.srcPtr.ptr = reinterpret_cast<void *>(_data);
-        params.srcPtr.pitch = _pitch;
-        params.srcPtr.xsize = _sizes[0];
-        params.srcPtr.ysize = _sizes[1];
-
-        params.dstPtr.ptr = host_data;
-        params.dstPtr.pitch = _sizes[0] * sizeof(T);
-        params.dstPtr.xsize = _sizes[0];
-        params.dstPtr.ysize = _sizes[1];
-
+        params.srcPtr = make_cudaPitchedPtr(reinterpret_cast<void *>(_data),
+                                            _pitch, _sizes[0], _sizes[1]);
+        params.dstPtr = make_cudaPitchedPtr(host_data, _sizes[0] * sizeof(T),
+                                            _sizes[0], _sizes[1]);
+        params.extent = make_cudaExtent(_sizes[0]*sizeof(T), _sizes[1],
+                                        _sizes[2]);
         params.kind = cudaMemcpyDeviceToHost;
-        params.extent = make_cudaExtent(_sizes[0], _sizes[1], _sizes[2]);
 
         SHAKTI_SAFE_CUDA_CALL(cudaMemcpy3D(&params));
       }
       else
-        SHAKTI_SAFE_CUDA_CALL(
-          cudaMemcpy(host_data, _data, sizeof(T) * size(),
-                     cudaMemcpyDeviceToHost));
+        SHAKTI_SAFE_CUDA_CALL(cudaMemcpy(host_data, _data, sizeof(T) * size(),
+                                         cudaMemcpyDeviceToHost));
     }
 
-    //! \brief Copy the ND-array content to a std::vector object.
+    //! @brief Copy the ND-array content to a std::vector object.
     __host__
     inline void copy_to_host(std::vector<T>& host_vector) const
     {
@@ -269,7 +263,7 @@ namespace DO { namespace Shakti {
     }
 
   protected:
-    //! \brief Compute the raw size needed to allocate the internal data.
+    //! @brief Compute the raw size needed to allocate the internal data.
     __host__ __device__
     inline size_type compute_size(const vector_type& sizes) const
     {
@@ -279,7 +273,7 @@ namespace DO { namespace Shakti {
       return sz;
     }
 
-    //! \brief Compute the 1D index of the corresponding coordinates.
+    //! @brief Compute the 1D index of the corresponding coordinates.
     __host__ __device__
     inline int offset(const vector_type& pos) const
     {
@@ -287,13 +281,13 @@ namespace DO { namespace Shakti {
     }
 
   protected: /* data members. */
-    //! \brief Internal storage array.
+    //! @brief Internal storage array.
     value_type *_data{ nullptr };
-    //! \brief Vector of size along each dimension.
+    //! @brief Vector of size along each dimension.
     vector_type _sizes{ vector_type::Zero() };
-    //! \brief Vector of stride for each dimension.
+    //! @brief Vector of stride for each dimension.
     vector_type _strides{ vector_type::Zero() };
-    //! \brief Pitch size in number of bytes.
+    //! @brief Pitch size in number of bytes.
     size_type _pitch{ 0 };
   };
 

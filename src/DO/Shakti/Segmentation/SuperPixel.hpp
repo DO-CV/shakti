@@ -33,11 +33,11 @@ namespace DO { namespace Shakti {
   class DO_SHAKTI_EXPORT SegmentationSLIC
   {
   public:
-    //! \brief Constructor.
+    //! @brief Constructor.
     SegmentationSLIC();
 
     //! @{
-    //! \brief Getters.
+    //! @brief Getters.
     Vector2i get_image_sizes() const;
 
     int get_image_padded_width() const;
@@ -46,7 +46,7 @@ namespace DO { namespace Shakti {
     //! @}
 
     //! @{
-    //! \brief Setters.
+    //! @brief Setters.
     void set_image_sizes(const Vector2i& sizes, int padded_width);
 
     void set_image_sizes(const MultiArray<Vector4f, 2>& device_image);
@@ -56,7 +56,7 @@ namespace DO { namespace Shakti {
 
   public:
     //! @{
-    //! \brief Run the algorithm.
+    //! @brief Run the algorithm.
     MultiArray<int, 2> operator()(const MultiArray<Vector4f, 2>& image);
 
     void operator()(int *out_labels, const Vector4f *rgba_image, const int *sizes);

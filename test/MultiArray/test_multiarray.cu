@@ -31,9 +31,25 @@ TEST(TestMultiArray, test_constructor_2d)
   EXPECT_EQ(shakti::Vector2i(3, 4), matrix.sizes());
   EXPECT_EQ(3, matrix.size(0));
   EXPECT_EQ(4, matrix.size(1));
+
+  EXPECT_EQ(3, matrix.width());
+  EXPECT_EQ(4, matrix.height());
 }
 
-TEST(MultiArray, test_copy_between_host_and_device)
+TEST(TestMultiArray, test_constructor_3d)
+{
+  shakti::MultiArray<float, 3> matrix{ { 3, 4, 5 } };
+  EXPECT_EQ(shakti::Vector3i(3, 4, 5), matrix.sizes());
+  EXPECT_EQ(3, matrix.size(0));
+  EXPECT_EQ(4, matrix.size(1));
+  EXPECT_EQ(5, matrix.size(2));
+
+  EXPECT_EQ(3, matrix.width());
+  EXPECT_EQ(4, matrix.height());
+  EXPECT_EQ(5, matrix.depth());
+}
+
+TEST(MultiArray, test_copy_between_host_and_device_2d)
 {
   const int w = 3;
   const int h = 4;
@@ -54,6 +70,24 @@ TEST(MultiArray, test_copy_between_host_and_device)
   EXPECT_TRUE(equal(in_host_data, in_host_data + w*h, out_host_data));
 }
 
+TEST(MultiArray, test_copy_between_host_and_device_3d)
+{
+  const int w = 3;
+  const int h = 4;
+  const int d = 5;
+  float in_host_data[w*h*d];
+  for (int i = 0; i < w*h*d; ++i)
+    in_host_data[i] = i;
+
+  // Copy to device.
+  shakti::MultiArray<float, 3> out_device_image{ in_host_data, { w, h, d } };
+
+  // Copy back to host.
+  float out_host_data[w*h*d];
+  out_device_image.copy_to_host(out_host_data);
+
+  EXPECT_TRUE(equal(in_host_data, in_host_data + w*h*d, out_host_data));
+}
 
 int main(int argc, char **argv)
 {

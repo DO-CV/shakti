@@ -59,8 +59,8 @@ flags = [
 # Current header directories.
 "-I", "./src",
 # Third-party header directories.
-"-I", "./third-party/eigen",
-"-I", "./third-party/gtest/include"
+"-I", "./third_party/eigen",
+"-I", "./third_party/gtest/include"
 ]
 
 if compilation_database_folder:
