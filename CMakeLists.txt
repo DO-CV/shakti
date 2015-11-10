@@ -50,6 +50,7 @@ set(DO_Shakti_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti)
 include(shakti_macros)
 include(shakti_configure_nvcc_compiler)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
 
 # ============================================================================ #
 # Build the following directories.

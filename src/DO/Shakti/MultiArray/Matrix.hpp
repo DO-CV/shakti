@@ -470,6 +470,7 @@ namespace DO { namespace Shakti {
   using Vector3f = Vector<float, 3>;
   using Vector3d = Vector<double, 3>;
 
+  using Vector4ub = Vector<unsigned char, 4>;
   using Vector4i = Vector<int, 4>;
   using Vector4f = Vector<float, 4>;
   using Vector4d = Vector<double, 4>;

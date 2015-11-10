@@ -22,6 +22,11 @@ namespace DO { namespace Shakti {
     return dim3{ 16, 16 };
   }
 
+  inline dim3 default_block_size_3d()
+  {
+    return dim3{ 8, 8, 8 };
+  }
+
   inline dim3 grid_size_2d(const Vector2i& sizes,
                            const int padded_width,
                            dim3 block_size = default_block_size_2d())
@@ -32,11 +37,29 @@ namespace DO { namespace Shakti {
     };
   }
 
+  inline dim3 grid_size_3d(const Vector3i& sizes,
+                           const int padded_width,
+                           dim3 block_size = default_block_size_3d())
+  {
+    return dim3{
+      (padded_width + block_size.x - 1) / block_size.x,
+      (sizes.y() + block_size.y - 1) / block_size.y,
+      (sizes.z() + block_size.z - 1) / block_size.z
+    };
+  }
+
   template <typename T, int N, typename Strides>
   inline dim3 grid_size_2d(const MultiArrayView<T, N, Strides>& data,
                            dim3 block_size = default_block_size_2d())
   {
     return grid_size_2d(data.sizes(), data.padded_width(), block_size);
+  }
+
+  template <typename T, int N, typename Strides>
+  inline dim3 grid_size_3d(const MultiArrayView<T, N, Strides>& data,
+                           dim3 block_size = default_block_size_3d())
+  {
+    return grid_size_3d(data.sizes(), data.padded_width(), block_size);
   }
 
 } /* namespace Shakti */

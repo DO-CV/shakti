@@ -31,7 +31,7 @@ namespace DO { namespace Shakti {
 
   private:
     float _bin_scale_unit_length = 3.f;
-    //! \brief Maximum value for a descriptor bin value to remain robust w.r.t.
+    //! @brief Maximum value for a descriptor bin value to remain robust w.r.t.
     //! illumination changes.
     float _max_bin_value = 0.2f;
     float _sigma = 1.6f;
