@@ -14,7 +14,7 @@ foreach (library ${DO_Shakti_LIBRARIES})
   shakti_create_common_variables("${library}")
   shakti_generate_library("${library}")
   target_link_libraries(DO_Shakti_${library}
-    ${DO_Sara_LIBRARIES}
+    ${DO_Sara_Core_LIBRARIES}
     ${CUDA_CUDART_LIBRARY})
 endforeach ()
 

@@ -16,6 +16,5 @@ foreach (file ${examples_SRC_FILES})
     ${filename}
     ${DO_Sara_LIBRARIES}
     DO_Shakti_ImageProcessing
-    DO_Shakti_Utilities
-  )
+    DO_Shakti_Utilities)
 endforeach()
