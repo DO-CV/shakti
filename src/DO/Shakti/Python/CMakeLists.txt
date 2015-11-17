@@ -20,8 +20,7 @@ python_add_module(shakti ${shakti_SRC_FILES})
 target_link_libraries(shakti
   ${Boost_LIBRARIES}
   ${PYTHON_LIBRARIES}
-  DO_Shakti_ImageProcessing
-)
+  DO_Shakti_ImageProcessing)
 
 
 execute_process(COMMAND python -c
