@@ -172,7 +172,7 @@ macro (shakti_append_library _library_name
 
     # Form the compiled library output name.
     set(_library_output_basename
-        DO_Shakti_${_library_name}-${DO_Shakti_VERSION})
+        DO_Shakti_${_library_name})
     if (SHAKTI_BUILD_SHARED_LIBS)
       set (_library_output_name "${_library_output_basename}")
       set (_library_output_name_debug "${_library_output_basename}-d")
