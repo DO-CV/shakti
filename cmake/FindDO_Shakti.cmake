@@ -51,11 +51,11 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
 
   # Find compiled libraries.
   if (SHAKTI_USE_STATIC_LIBS)
-    set (_library_name "DO_Shakti_${COMPONENT}-${DO_Shakti_VERSION}-s")
-    set (_library_name_debug "DO_Shakti_${COMPONENT}-${DO_Shakti_VERSION}-sd")
+    set (_library_name "DO_Shakti_${COMPONENT}-s")
+    set (_library_name_debug "DO_Shakti_${COMPONENT}-sd")
   else ()
-    set (_library_name "DO_Shakti_${COMPONENT}-${DO_Shakti_VERSION}")
-    set (_library_name_debug "DO_Shakti_${COMPONENT}-${DO_Shakti_VERSION}-d")
+    set (_library_name "DO_Shakti_${COMPONENT}")
+    set (_library_name_debug "DO_Shakti_${COMPONENT}-d")
   endif ()
 
   find_library(DO_Shakti_${COMPONENT}_DEBUG_LIBRARIES
