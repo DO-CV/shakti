@@ -27,7 +27,7 @@ Shakti: CUDA Computer Vision Algorithms
 Build the libraries
 -------------------
 
-Make sure that **CUDA >= 7.0** and **Sara** is installed.
+Make sure that **CUDA >= 7.0** and **Sara** are installed.
 
 1. Install the following packages:
 
