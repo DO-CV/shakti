@@ -42,6 +42,28 @@ set(CPACK_DEBIAN_PACKAGE_VERSION ${CPACK_PACKAGE_VERSION})
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "cmake")
 
 
+# ============================================================================ #
+# Special settings for auto-generated SPEC file for RPM packaging.
+execute_process(COMMAND python -c
+  "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+  OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
+  /usr
+  /usr/include
+  /usr/lib
+  /usr/local
+  /usr/local/share
+  /usr/share
+  $ENV{WORKON_HOME}
+  $ENV{VIRTUAL_ENV}
+  $ENV{VIRTUAL_ENV}/lib
+  $ENV{VIRTUAL_ENV}/lib/python2
+  $ENV{VIRTUAL_ENV}/lib/python2.7
+  ${PYTHON_SITE_PACKAGES_DIR}
+  ${PYTHON_SITE_PACKAGES_DIR}/do)
+
 
 # ============================================================================ #
 # Special configuration for Windows installer using NSIS.
