@@ -9,3 +9,8 @@ cmake ../shakti \
   -DSHAKTI_BUILD_SAMPLES=ON
 
 make -j`nproc` && make test && make package
+
+sudo cp ../shakti-build-shared/libDO-Shakti-shared-*.deb /usr/local/debs
+sudo update-local-debs
+sudo apt-get update
+sudo apt-get install --reinstall libdo-shakti-shared
