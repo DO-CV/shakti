@@ -10,6 +10,7 @@ cmake ../shakti \
 
 make -j`nproc` && make test && make package
 
+dpkg-sig --sign builder ../shakti-build-shared/libDO-Shakti-shared-*.deb
 sudo cp ../shakti-build-shared/libDO-Shakti-shared-*.deb /usr/local/debs
 sudo update-local-debs
 sudo apt-get update
