@@ -12,7 +12,7 @@
 #ifndef DO_SHAKTI_DEFINES_HPP
 #define DO_SHAKTI_DEFINES_HPP
 
-#define DO_SHAKTI_VERSION "0.1.0"
+#define DO_SHAKTI_VERSION "0.1.88.rdb843a9"
 
 #if defined(_WIN32) || defined(_WIN32_WCE)
 # ifdef DO_SHAKTI_EXPORTS

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
-set(DO_Shakti_VERSION 0.1.0)
+
+set(DO_Shakti_VERSION_MAJOR 0)
+set(DO_Shakti_VERSION_MINOR 1)
 
 project(Shakti)
 
@@ -13,15 +15,6 @@ option(SHAKTI_BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(SHAKTI_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
 option(SHAKTI_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 
-
-# ============================================================================ #
-# Set Shakti Library version.
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/shakti_version.cmake.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/shakti_version.cmake @ONLY)
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti/Defines.hpp.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti/Defines.hpp @ONLY)
 
 # Set default build type to Release mode.
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING
@@ -51,6 +44,7 @@ set(DO_Shakti_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DO_Shakti_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti)
 include(shakti_macros)
 include(shakti_configure_nvcc_compiler)
+shakti_dissect_version()
 
 
 # ============================================================================ #
