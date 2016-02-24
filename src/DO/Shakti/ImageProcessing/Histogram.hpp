@@ -21,10 +21,12 @@
 namespace DO { namespace Shakti {
 
   DO_SHAKTI_EXPORT
-  MultiArray<float, 3> compute_color_histogram(const MultiArray<Vector4f, 2>& in);
+  MultiArray<float, 3>
+  compute_color_histogram(const MultiArray<Vector4f, 2>& in);
 
   DO_SHAKTI_EXPORT
-  MultiArray<float, 3> normalize_color_histogram(const MultiArray<Vector4f, 2>& in);
+  MultiArray<float, 3>
+  normalize_color_histogram(const MultiArray<Vector4f, 2>& in);
 
 } /* namespace Shakti */
 } /* namespace DO */

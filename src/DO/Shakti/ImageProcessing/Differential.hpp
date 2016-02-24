@@ -51,7 +51,8 @@ namespace DO { namespace Shakti {
   void compute_gradient(Vector2f *out, const float *in, const int *sizes);
 
   DO_SHAKTI_EXPORT
-  void compute_gradient_squared_norms(float *out, const float *in, const int *sizes);
+  void compute_gradient_squared_norms(float *out, const float *in,
+                                      const int *sizes);
 
   DO_SHAKTI_EXPORT
   void compute_laplacian(float *out, const float *in, const int *sizes);

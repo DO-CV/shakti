@@ -1,9 +1,3 @@
-# Set output directories.
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-
 # Create the following libraries.
 set(DO_Shakti_LIBRARIES MultiArray ImageProcessing Segmentation Utilities)
 foreach (library ${DO_Shakti_LIBRARIES})
@@ -14,12 +8,6 @@ foreach (library ${DO_Shakti_LIBRARIES})
     ${DO_Sara_Core_LIBRARIES}
     ${CUDA_CUDART_LIBRARY})
 endforeach ()
-
-
-# Python bindings.
-if (SHAKTI_BUILD_PYTHON_BINDINGS)
-  add_subdirectory(DO/Shakti/Python)
-endif ()
 
 
 # Install licenses and source files.

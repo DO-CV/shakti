@@ -7,7 +7,9 @@ find_package(CUDA 7.0 REQUIRED)
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 # Load DO-specific macros
+include
 include(shakti_configure_nvcc_compiler)
+include(shakti_configure_cxx_compiler)
 include(shakti_macros)
 include(shakti_version)
 

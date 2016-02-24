@@ -18,6 +18,8 @@
 
 #include <numpy/ndarrayobject.h>
 
+#include <DO/Shakti/MultiArray/Matrix.hpp>
+
 
 inline
 #if (PY_VERSION_HEX < 0x03000000)
@@ -33,6 +35,39 @@ void * import_numpy_array()
   return NULL;
 #endif
 }
+
+
+namespace DO { namespace Shakti {
+
+  template <typename T>
+  inline T * get_ndarray_data(PyObject *o)
+  {
+    auto np_array = reinterpret_cast<PyArrayObject *>(o);
+    return reinterpret_cast<T*>(PyArray_DATA(np_array));
+  }
+
+  Vector2i get_ndarray_shape_2d(PyObject *object)
+  {
+    auto np_array = reinterpret_cast<PyArrayObject *>(object);
+    auto shape_data = PyArray_SHAPE(np_array);
+    const auto h = int(shape_data[0]);
+    const auto w = int(shape_data[1]);
+    return Vector2i{ w, h };
+  }
+
+  Vector3i get_ndarray_shape_3d(PyObject * object)
+  {
+    auto np_array = reinterpret_cast<PyArrayObject *>(object);
+    auto shape_data = PyArray_SHAPE(np_array);
+    const auto h = int(shape_data[0]);
+    const auto w = int(shape_data[1]);
+    const auto d = int(shape_data[2]);
+    return Vector3i{ w, h, d };
+  }
+
+
+} /* namespace Shakti */
+} /* namespace DO */
 
 
 #endif /* DO_SHAKTI_PYTHON_NUMPY_HPP */
