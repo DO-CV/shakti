@@ -43,11 +43,12 @@ find_package(DO_Sara COMPONENTS
 set(DO_Shakti_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DO_Shakti_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti)
 include(shakti_macros)
+shakti_dissect_version()
+
 include(shakti_configure_nvcc_compiler)
 include(shakti_configure_cxx_compiler)
 include(shakti_installation_settings)
 
-shakti_dissect_version()
 
 # ============================================================================ #
 # Build the following directories.
