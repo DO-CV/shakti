@@ -17,7 +17,7 @@ cmake ../shakti \
   -DSHAKTI_BUILD_SAMPLES=ON
 
 # Build the library.
-make -j`nproc` && make test && make package
+make -j`nproc` && make test && make pytest && make package
 
 # Register package to local debian repository.
 dpkg-sig --sign builder ../shakti-build-shared/libDO-Shakti-shared-*.deb

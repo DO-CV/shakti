@@ -3,7 +3,7 @@
 #include "ImageProcessing.hpp"
 
 
-BOOST_PYTHON_MODULE(shakti)
+BOOST_PYTHON_MODULE(pyshakti)
 {
   expose_imageprocessing();
 }
