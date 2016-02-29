@@ -1,11 +1,11 @@
 set -e
 
 # Create the build directory.
-if [ -d "../shakti-build-shared" ]; then
-  rm -rf ../shakti-build-shared
+if [ -d "../shakti-build" ]; then
+  rm -rf ../shakti-build
 fi
-mkdir ../shakti-build-shared
-cd ../shakti-build-shared
+mkdir ../shakti-build
+cd ../shakti-build
 
 # Create the CMake project.
 cmake ../shakti \
