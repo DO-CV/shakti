@@ -19,9 +19,14 @@ cmake ../shakti \
 # Build the library.
 make -j`nproc` && make test && make pytest && make package
 
-# Register package to local debian repository.
-dpkg-sig --sign builder ../shakti-build-shared/libDO-Shakti-shared-*.deb
-sudo cp ../shakti-build-shared/libDO-Shakti-shared-*.deb /usr/local/debs
-sudo update-local-debs
-sudo apt-get update
-sudo apt-get install --reinstall libdo-shakti-shared
+if [ -f "/etc/debian_version" ]; then
+  # Register package to local debian repository.
+  dpkg-sig --sign builder ../shakti-build-shared/libDO-Shakti-shared-*.deb
+  sudo cp ../shakti-build-shared/libDO-Shakti-shared-*.deb /usr/local/debs
+  sudo update-local-debs
+  sudo apt-get update
+  sudo apt-get install --reinstall libdo-shakti-shared
+else
+  rpm_package_name=$(echo `ls *.rpm`)
+  sudo rpm -ivh --force ${rpm_package_name}
+fi
