@@ -36,8 +36,8 @@ list(APPEND CMAKE_MODULE_PATH
 
 # Find third-party libraries.
 find_package(CUDA 7.0 REQUIRED)
-find_package(DO_Sara COMPONENTS
-  Core Graphics FeatureDescriptors ImageIO VideoIO REQUIRED)
+find_package(DO_Sara COMPONENTS Core Graphics FeatureDescriptors ImageIO
+             REQUIRED)
 
 # Use custom CMake macros.
 set(DO_Shakti_DIR ${CMAKE_CURRENT_SOURCE_DIR})

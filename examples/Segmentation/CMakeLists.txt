@@ -8,7 +8,6 @@ target_link_libraries(
 )
 
 
-
 find_library(LIBQUICKTIME_LIBRARY
   NAMES quicktime
   PATHS /usr/lib/x86_64-linux-gnu)
