@@ -25,15 +25,7 @@ set(BUILD_SHARED_LIBS ${SHAKTI_BUILD_SHARED_LIBS})
 
 # ============================================================================ #
 # State the list of dependencies.
-find_path(
-  DO_Sara_DIR
-  NAMES cmake/FindDO_Sara.cmake
-  PATHS  "C:/Program Files/DO-Sara/include/DO/Sara"
-         /usr/local/include/DO/Sara
-         /usr/include/DO/Sara)
-
 list(APPEND CMAKE_MODULE_PATH
-     ${DO_Sara_DIR}/cmake
      ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Find third-party libraries.
