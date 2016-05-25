@@ -7,4 +7,3 @@ endif ()
 if (SHAKTI_USE_STATIC_LIBS OR NOT SHAKTI_BUILD_SHARED_LIBS)
   add_definitions("-DDO_SHAKTI_STATIC")
 endif ()
-

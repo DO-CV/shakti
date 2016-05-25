@@ -56,10 +56,10 @@ macro (shakti_dissect_version)
 
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/shakti_version.cmake.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/shakti_version.cmake @ONLY)
+    ${CMAKE_BINARY_DIR}/cmake/shakti_version.cmake @ONLY)
   configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti/Defines.hpp.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/DO/Shakti/Defines.hpp @ONLY)
+    ${CMAKE_BINARY_DIR}/src/DO/Shakti/Defines.hpp @ONLY)
 
 endmacro ()
 
@@ -222,9 +222,9 @@ macro (shakti_append_library _library_name
     # Specify where to install the static library.
     install(
       TARGETS DO_Shakti_${_library_name}
-      RUNTIME DESTINATION bin COMPONENT Libraries
-      LIBRARY DESTINATION lib/DO/Shakti COMPONENT Libraries
-      ARCHIVE DESTINATION lib/DO/Shakti COMPONENT Libraries)
+      RUNTIME DESTINATION ${SHAKTI_INSTALL_DIR}/bin COMPONENT Libraries
+      LIBRARY DESTINATION ${SHAKTI_INSTALL_DIR}/lib/DO/Shakti COMPONENT Libraries
+      ARCHIVE DESTINATION ${SHAKTI_INSTALL_DIR}/lib/DO/Shakti COMPONENT Libraries)
   endif ()
 
   # 5. Put the library into the folder "DO Shakti Libraries".
@@ -247,50 +247,50 @@ endmacro ()
 
 
 function (shakti_add_example)
-   # Get the test executable name.
-   list(GET ARGN 0 EXAMPLE_NAME)
-   message(STATUS "EXAMPLE NAME = ${EXAMPLE_NAME}")
+  # Get the test executable name.
+  list(GET ARGN 0 EXAMPLE_NAME)
+  message(STATUS "EXAMPLE NAME = ${EXAMPLE_NAME}")
 
-   # Get the list of source files.
-   list(REMOVE_ITEM ARGN ${EXAMPLE_NAME})
-   message(STATUS "SOURCE FILES = ${ARGN}")
+  # Get the list of source files.
+  list(REMOVE_ITEM ARGN ${EXAMPLE_NAME})
+  message(STATUS "SOURCE FILES = ${ARGN}")
 
-   # Split the list of source files in two sub-lists:
-   # - list of CUDA source files.
-   # - list of regular C++ source files.
-   set (CUDA_SOURCE_FILES "")
-   set (CPP_SOURCE_FILES "")
-   foreach (SOURCE ${ARGN})
-     if (${SOURCE} MATCHES "(.*).cu$")
-       list(APPEND CUDA_SOURCE_FILES ${SOURCE})
-     else ()
-       list(APPEND CPP_SOURCE_FILES ${SOURCE})
-     endif()
-   endforeach ()
-   message(STATUS "CUDA_SOURCE_FILES = ${CUDA_SOURCE_FILES}")
-   message(STATUS "CPP_SOURCE_FILES = ${CPP_SOURCE_FILES}")
+  # Split the list of source files in two sub-lists:
+  # - list of CUDA source files.
+  # - list of regular C++ source files.
+  set (CUDA_SOURCE_FILES "")
+  set (CPP_SOURCE_FILES "")
+  foreach (SOURCE ${ARGN})
+    if (${SOURCE} MATCHES "(.*).cu$")
+      list(APPEND CUDA_SOURCE_FILES ${SOURCE})
+    else ()
+      list(APPEND CPP_SOURCE_FILES ${SOURCE})
+    endif()
+  endforeach ()
+  message(STATUS "CUDA_SOURCE_FILES = ${CUDA_SOURCE_FILES}")
+  message(STATUS "CPP_SOURCE_FILES = ${CPP_SOURCE_FILES}")
 
-   # Add the C++ test executable.
-   add_executable(${EXAMPLE_NAME} ${CPP_SOURCE_FILES})
-   set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "DO Shakti Examples")
-   set_target_properties(
-     ${EXAMPLE_NAME} PROPERTIES
-     COMPILE_FLAGS ${SARA_DEFINITIONS}
-     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-   )
+  # Add the C++ test executable.
+  add_executable(${EXAMPLE_NAME} ${CPP_SOURCE_FILES})
+  set_property(TARGET ${EXAMPLE_NAME} PROPERTY FOLDER "DO Shakti Examples")
+  set_target_properties(
+    ${EXAMPLE_NAME} PROPERTIES
+    COMPILE_FLAGS ${SARA_DEFINITIONS}
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
 
-   # Create an auxilliary library for CUDA based code.
-   # This is a workaround to do unit-test CUDA code with gtest.
-   if (NOT "${CUDA_SOURCE_FILES}" STREQUAL "")
-     source_group("CUDA Source Files" REGULAR_EXPRESSION ".*\\.cu$")
-     cuda_add_library(${EXAMPLE_NAME}_CUDA_AUX ${CUDA_SOURCE_FILES})
-     target_link_libraries(${EXAMPLE_NAME}_CUDA_AUX
-                           DO_Shakti_Utilities
-                           ${DO_LIBRARIES})
-     # Group the unit test in the "Tests" folder.
-     set_property(
-       TARGET ${EXAMPLE_NAME}_CUDA_AUX PROPERTY FOLDER "CUDA Examples")
+  # Create an auxilliary library for CUDA based code.
+  # This is a workaround to do unit-test CUDA code with gtest.
+  if (NOT "${CUDA_SOURCE_FILES}" STREQUAL "")
+    source_group("CUDA Source Files" REGULAR_EXPRESSION ".*\\.cu$")
+    cuda_add_library(${EXAMPLE_NAME}_CUDA_AUX ${CUDA_SOURCE_FILES})
+    target_link_libraries(${EXAMPLE_NAME}_CUDA_AUX
+      DO_Shakti_Utilities
+      ${DO_LIBRARIES})
+    # Group the unit test in the "Tests" folder.
+    set_property(
+      TARGET ${EXAMPLE_NAME}_CUDA_AUX PROPERTY FOLDER "CUDA Examples")
 
-     target_link_libraries(${EXAMPLE_NAME} ${EXAMPLE_NAME}_CUDA_AUX ${DO_LIBRARIES})
-   endif ()
+    target_link_libraries(${EXAMPLE_NAME} ${EXAMPLE_NAME}_CUDA_AUX ${DO_LIBRARIES})
+  endif ()
 endfunction ()

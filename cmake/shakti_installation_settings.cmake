@@ -63,9 +63,17 @@ list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
   /usr
   /usr/include
   /usr/lib
-  /usr/local
-  /usr/local/share
   /usr/share
+  /usr/local
+  /usr/local/include
+  /usr/local/lib
+  /usr/local/share
+  ${SHAKTI_INSTALL_DIR}
+  ${SHAKTI_INSTALL_DIR}/include
+  ${SHAKTI_INSTALL_DIR}/lib
+  ${SHAKTI_INSTALL_DIR}/share
+  ${SHAKTI_INSTALL_DIR}/python
+  ${SHAKTI_INSTALL_DIR}/python/do
   $ENV{WORKON_HOME}
   $ENV{VIRTUAL_ENV}
   $ENV{VIRTUAL_ENV}/lib
@@ -73,6 +81,11 @@ list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
   $ENV{VIRTUAL_ENV}/lib/python2.7
   ${PYTHON_SITE_PACKAGES_DIR}
   ${PYTHON_SITE_PACKAGES_DIR}/do)
+
+# We don't want CPackRPM to add CUDA as a required libraries.
+# See:
+# http://stackoverflow.com/questions/14658034/how-do-you-make-it-so-that-cpack-doesnt-add-required-libraries-to-an-rpm
+set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
 
 
 # ============================================================================ #

@@ -6,6 +6,11 @@ endif()
 find_package(CUDA 7.0 REQUIRED)
 include_directories(${CUDA_TOOLKIT_INCLUDE})
 
+
+# Append additional CMake module scripts.
+list(APPEND CMAKE_MODULE_PATH
+  @SHAKTI_INSTALL_DIR@/share/DO_Shakti/cmake)
+
 # Load DO-specific macros
 include(shakti_configure_nvcc_compiler)
 include(shakti_configure_cxx_compiler)
@@ -13,12 +18,17 @@ include(shakti_macros)
 include(shakti_version)
 
 
+
+# ============================================================================ #
 # Debug message.
 shakti_step_message("FindDO_Shakti running for project '${PROJECT_NAME}'")
 
 
+
+# ============================================================================ #
 # 'find_package(DO_Shakti COMPONENTS Core Graphics ... REQUIRED)' is called.
 set (DO_Shakti_ALL_COMPONENTS ImageProcessing MultiArray Utilities Segmentation)
+
 if (NOT DO_Shakti_FIND_COMPONENTS)
   set(DO_Shakti_USE_COMPONENTS ${DO_Shakti_ALL_COMPONENTS})
 else ()
@@ -34,23 +44,30 @@ else ()
 endif ()
 
 
+
+# ============================================================================ #
 # Find include directories.
-find_path(
-  DO_Shakti_INCLUDE_DIRS
+#
+find_path(DO_Shakti_INCLUDE_DIRS
   NAMES DO/Shakti.hpp
-  PATHS
-  /usr/include /usr/local/include
-  "C:/Program Files/DO-Shakti/include")
+  PATHS @SHAKTI_INSTALL_DIR@
+        "C:/Program Files/DO-Shakti"
+  PATH_SUFFIXES include)
 
 
-# Remove header-only libraries.
+
+# ============================================================================ #
+# Find compiled component libraries.
+#
+# First remove header-only libraries.
 list (REMOVE_ITEM DO_Shakti_USE_COMPONENTS "MultiArray")
 
+# Initialize the list of compiled component libraries we want to use.
+set(DO_Shakti_LIBRARIES "")
 
-# Find compiled libraries.
+# Find the specific component libraries.
 foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
 
-  # Find compiled libraries.
   if (SHAKTI_USE_STATIC_LIBS)
     set (_library_name "DO_Shakti_${COMPONENT}-s")
     set (_library_name_debug "DO_Shakti_${COMPONENT}-sd")
@@ -61,19 +78,18 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
 
   find_library(DO_Shakti_${COMPONENT}_DEBUG_LIBRARIES
     NAMES ${_library_name_debug}
-    PATHS /usr/lib /usr/local/lib /opt/local/lib
-          "C:/Program Files/DO-Shakti-Debug/lib"
-    PATH_SUFFIXES DO/Shakti)
+    PATHS @SHAKTI_INSTALL_DIR@
+          "C:/Program Files/DO-Shakti-Debug"
+    PATH_SUFFIXES lib/DO/Shakti)
 
   find_library(DO_Shakti_${COMPONENT}_RELEASE_LIBRARIES
     NAMES ${_library_name}
-    PATHS /usr/lib /usr/local/lib /opt/local/lib
-          "C:/Program Files/DO-Shakti/lib"
-    PATH_SUFFIXES DO/Shakti)
+    PATHS @SHAKTI_INSTALL_DIR@
+          "C:/Program Files/DO-Shakti"
+    PATH_SUFFIXES lib/DO/Shakti)
 
   if (NOT SHAKTI_USE_STATIC_LIBS AND NOT DO_Shakti_${COMPONENT}_DEBUG_LIBRARIES)
-    set(
-      DO_Shakti_${COMPONENT}_LIBRARIES
+    set(DO_Shakti_${COMPONENT}_LIBRARIES
       ${DO_Shakti_${COMPONENT}_RELEASE_LIBRARIES}
       CACHE STRING "")
   else ()
@@ -96,15 +112,21 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
     list(APPEND DO_Shakti_LIBRARIES ${DO_Shakti_${COMPONENT}_LIBRARIES})
   endif ()
 
-endforeach()
+endforeach ()
+
+# Finally add the CUDA runtime library.
 list(APPEND DO_Shakti_LIBRARIES ${CUDA_CUDART_LIBRARY})
 
 
+
+# ============================================================================ #
 # List the compile flags needed by DO-Shakti.
 if (SHAKTI_USE_STATIC_LIBS OR NOT SHAKTI_BUILD_SHARED_LIBS)
   add_definitions("-DDO_SHAKTI_STATIC")
 endif ()
 
 
-# Debug.
+
+# ============================================================================ #
+# Debug message.
 message("DO_Shakti_LIBRARIES = ${DO_Shakti_LIBRARIES}")
