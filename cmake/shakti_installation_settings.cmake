@@ -74,6 +74,11 @@ list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
   ${PYTHON_SITE_PACKAGES_DIR}
   ${PYTHON_SITE_PACKAGES_DIR}/do)
 
+# We don't want CPackRPM to add CUDA as a required libraries.
+# See:
+# http://stackoverflow.com/questions/14658034/how-do-you-make-it-so-that-cpack-doesnt-add-required-libraries-to-an-rpm
+set(CPACK_RPM_PACKAGE_AUTOREQPROV " no")
+
 
 # ============================================================================ #
 # Special configuration for Windows installer using NSIS.
