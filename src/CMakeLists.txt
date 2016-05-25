@@ -13,7 +13,7 @@ endforeach ()
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   configure_file(${DO_Shakti_DIR}/cmake/DO_ShaktiConfig.cmake.in
                  ${CMAKE_BINARY_DIR}/cmake/DO_ShaktiConfig.cmake @ONLY)
-  file(COPY ${DO_Shati_DIR}/cmake DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${DO_Shakti_DIR}/cmake DESTINATION ${CMAKE_BINARY_DIR})
 
   # Install license files.
   install(FILES ${DO_Shakti_DIR}/COPYING.README
