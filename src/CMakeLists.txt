@@ -10,20 +10,30 @@ foreach (library ${DO_Shakti_LIBRARIES})
 endforeach ()
 
 
-# Install licenses and source files.
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+  configure_file(${DO_Shakti_DIR}/cmake/DO_ShaktiConfig.cmake.in
+                 ${CMAKE_BINARY_DIR}/cmake/DO_ShaktiConfig.cmake @ONLY)
+  file(COPY ${DO_Shati_DIR}/cmake DESTINATION ${CMAKE_BINARY_DIR})
+
+  # Install license files.
   install(FILES ${DO_Shakti_DIR}/COPYING.README
                 ${DO_Shakti_DIR}/COPYING.MPL2
-    DESTINATION include/DO/Shakti
-    COMPONENT Sources)
-  install(DIRECTORY ${DO_Shakti_DIR}/cmake
-    DESTINATION include/DO/Shakti
-    COMPONENT Sources)
-  install(DIRECTORY ${DO_Shakti_DIR}/src/DO
-    DESTINATION include/
-    COMPONENT Sources)
+          DESTINATION ${SHAKTI_INSTALL_DIR}/include/DO/Shakti
+          COMPONENT Sources)
+
+  # Install CMake scripts.
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/cmake
+          DESTINATION ${SHAKTI_INSTALL_DIR}/share/DO_Shakti
+          COMPONENT Sources)
+
+  # Install source files.
   install(FILES ${DO_Shakti_SOURCE_DIR}/Defines.hpp
-    DESTINATION include/DO/Shakti
-    COMPONENT Sources)
+          DESTINATION ${SHAKTI_INSTALL_DIR}/include/DO/Shakti
+          COMPONENT Sources)
+
+  install(DIRECTORY ${DO_Shakti_DIR}/src/DO
+          DESTINATION ${SHAKTI_INSTALL_DIR}/include
+          COMPONENT Sources)
+
   set(CPACK_COMPONENT_Sources_REQUIRED 1)
 endif ()

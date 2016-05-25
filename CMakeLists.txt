@@ -9,6 +9,7 @@ if (POLICY CMP0020)
   cmake_policy(SET CMP0020 NEW)
 endif ()
 
+
 # ============================================================================ #
 # List the build options.
 option(SHAKTI_BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -19,6 +20,9 @@ option(SHAKTI_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 # Set default build type to Release mode.
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Build type options are: Debug, Release")
+
+set(SHAKTI_INSTALL_DIR /usr CACHE STRING
+  "Optional: Specify a directory path if want to install Shakti C++ and Python libraries in a self-contained directory.")
 
 set(BUILD_SHARED_LIBS ${SHAKTI_BUILD_SHARED_LIBS})
 
@@ -50,9 +54,9 @@ include(shakti_installation_settings)
 include_directories(
   ${CUDA_TOOLKIT_INCLUDE}
   ${DO_Sara_INCLUDE_DIRS}
+  ${CMAKE_BINARY_DIR}/src
   src
-  third_party/gtest/include
-)
+  third_party/gtest/include)
 
 # Group projects by category.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -76,7 +80,6 @@ endif ()
 if (SHAKTI_BUILD_SAMPLES)
   add_subdirectory(examples)
 endif ()
-
 
 
 # ============================================================================ #
