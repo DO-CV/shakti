@@ -222,9 +222,9 @@ macro (shakti_append_library _library_name
     # Specify where to install the static library.
     install(
       TARGETS DO_Shakti_${_library_name}
-      RUNTIME DESTINATION bin COMPONENT Libraries
-      LIBRARY DESTINATION lib/DO/Shakti COMPONENT Libraries
-      ARCHIVE DESTINATION lib/DO/Shakti COMPONENT Libraries)
+      RUNTIME DESTINATION ${SHAKTI_INSTALL_DIR}/bin COMPONENT Libraries
+      LIBRARY DESTINATION ${SHAKTI_INSTALL_DIR}/lib/DO/Shakti COMPONENT Libraries
+      ARCHIVE DESTINATION ${SHAKTI_INSTALL_DIR}/lib/DO/Shakti COMPONENT Libraries)
   endif ()
 
   # 5. Put the library into the folder "DO Shakti Libraries".

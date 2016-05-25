@@ -63,9 +63,17 @@ list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
   /usr
   /usr/include
   /usr/lib
-  /usr/local
-  /usr/local/share
   /usr/share
+  /usr/local
+  /usr/local/include
+  /usr/local/lib
+  /usr/local/share
+  ${SHAKTI_INSTALL_DIR}
+  ${SHAKTI_INSTALL_DIR}/include
+  ${SHAKTI_INSTALL_DIR}/lib
+  ${SHAKTI_INSTALL_DIR}/share
+  ${SHAKTI_INSTALL_DIR}/python
+  ${SHAKTI_INSTALL_DIR}/python/do
   $ENV{WORKON_HOME}
   $ENV{VIRTUAL_ENV}
   $ENV{VIRTUAL_ENV}/lib
