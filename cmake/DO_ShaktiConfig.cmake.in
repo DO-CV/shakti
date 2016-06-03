@@ -9,7 +9,7 @@ include_directories(${CUDA_TOOLKIT_INCLUDE})
 
 # Append additional CMake module scripts.
 list(APPEND CMAKE_MODULE_PATH
-  @SHAKTI_INSTALL_DIR@/share/DO_Shakti/cmake)
+     @CMAKE_INSTALL_PREFIX@/share/DO_Shakti/cmake)
 
 # Load DO-specific macros
 include(shakti_configure_nvcc_compiler)
@@ -21,7 +21,7 @@ include(shakti_version)
 
 # ============================================================================ #
 # Debug message.
-shakti_step_message("FindDO_Shakti running for project '${PROJECT_NAME}'")
+shakti_step_message("'DO_ShaktiConfig.cmake' running for project '${PROJECT_NAME}'")
 
 
 
@@ -50,7 +50,7 @@ endif ()
 #
 find_path(DO_Shakti_INCLUDE_DIRS
   NAMES DO/Shakti.hpp
-  PATHS @SHAKTI_INSTALL_DIR@
+  PATHS @CMAKE_INSTALL_PREFIX@
         "C:/Program Files/DO-Shakti"
   PATH_SUFFIXES include)
 
@@ -78,15 +78,15 @@ foreach (COMPONENT ${DO_Shakti_USE_COMPONENTS})
 
   find_library(DO_Shakti_${COMPONENT}_DEBUG_LIBRARIES
     NAMES ${_library_name_debug}
-    PATHS @SHAKTI_INSTALL_DIR@
+    PATHS @CMAKE_INSTALL_PREFIX@
           "C:/Program Files/DO-Shakti-Debug"
-    PATH_SUFFIXES lib/DO/Shakti)
+    PATH_SUFFIXES lib)
 
   find_library(DO_Shakti_${COMPONENT}_RELEASE_LIBRARIES
     NAMES ${_library_name}
-    PATHS @SHAKTI_INSTALL_DIR@
+    PATHS @CMAKE_INSTALL_PREFIX@
           "C:/Program Files/DO-Shakti"
-    PATH_SUFFIXES lib/DO/Shakti)
+    PATH_SUFFIXES lib)
 
   if (NOT SHAKTI_USE_STATIC_LIBS AND NOT DO_Shakti_${COMPONENT}_DEBUG_LIBRARIES)
     set(DO_Shakti_${COMPONENT}_LIBRARIES

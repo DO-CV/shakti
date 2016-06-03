@@ -18,21 +18,21 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   # Install license files.
   install(FILES ${DO_Shakti_DIR}/COPYING.README
                 ${DO_Shakti_DIR}/COPYING.MPL2
-          DESTINATION ${SHAKTI_INSTALL_DIR}/include/DO/Shakti
+          DESTINATION include/DO/Shakti
           COMPONENT Sources)
 
   # Install CMake scripts.
   install(DIRECTORY ${CMAKE_BINARY_DIR}/cmake
-          DESTINATION ${SHAKTI_INSTALL_DIR}/share/DO_Shakti
+          DESTINATION share/DO_Shakti
           COMPONENT Sources)
 
   # Install source files.
   install(FILES ${DO_Shakti_SOURCE_DIR}/Defines.hpp
-          DESTINATION ${SHAKTI_INSTALL_DIR}/include/DO/Shakti
+          DESTINATION include/DO/Shakti
           COMPONENT Sources)
 
   install(DIRECTORY ${DO_Shakti_DIR}/src/DO
-          DESTINATION ${SHAKTI_INSTALL_DIR}/include
+          DESTINATION include
           COMPONENT Sources)
 
   set(CPACK_COMPONENT_Sources_REQUIRED 1)
