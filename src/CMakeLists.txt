@@ -11,10 +11,6 @@ endforeach ()
 
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-  configure_file(${DO_Shakti_DIR}/cmake/DO_ShaktiConfig.cmake.in
-                 ${CMAKE_BINARY_DIR}/cmake/DO_ShaktiConfig.cmake @ONLY)
-  file(COPY ${DO_Shakti_DIR}/cmake DESTINATION ${CMAKE_BINARY_DIR})
-
   # Install license files.
   install(FILES ${DO_Shakti_DIR}/COPYING.README
                 ${DO_Shakti_DIR}/COPYING.MPL2
@@ -22,6 +18,10 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
           COMPONENT Sources)
 
   # Install CMake scripts.
+  configure_file(${DO_Shakti_DIR}/cmake/DO_ShaktiConfig.cmake.in
+                 ${CMAKE_BINARY_DIR}/cmake/DO_ShaktiConfig.cmake @ONLY)
+  file(GLOB SHAKTI_CMAKE_SCRIPTS ${DO_Shakti_DIR}/cmake/shakti_*.cmake)
+  file(COPY ${SHAKTI_CMAKE_SCRIPTS} DESTINATION ${CMAKE_BINARY_DIR}/cmake)
   install(DIRECTORY ${CMAKE_BINARY_DIR}/cmake
           DESTINATION share/DO_Shakti
           COMPONENT Sources)
