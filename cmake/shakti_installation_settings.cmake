@@ -3,6 +3,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+if (SHAKTI_SELF_CONTAINED_INSTALLATION)
+  set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+endif ()
+
 
 # List all available components for installation.
 set(CPACK_COMPONENTS_ALL Sources Libraries)
@@ -68,11 +72,11 @@ list(APPEND CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST
   /usr/local/include
   /usr/local/lib
   /usr/local/share
-  ${SHAKTI_INSTALL_DIR}
-  ${SHAKTI_INSTALL_DIR}/include
-  ${SHAKTI_INSTALL_DIR}/lib
-  ${SHAKTI_INSTALL_DIR}/lib/python2.7/site-packages/do
-  ${SHAKTI_INSTALL_DIR}/share
+  ${CMAKE_INSTALL_PREFIX}
+  ${CMAKE_INSTALL_PREFIX}/include
+  ${CMAKE_INSTALL_PREFIX}/lib
+  ${CMAKE_INSTALL_PREFIX}/lib/python2.7/site-packages/do
+  ${CMAKE_INSTALL_PREFIX}/share
   $ENV{WORKON_HOME}
   $ENV{VIRTUAL_ENV}
   $ENV{VIRTUAL_ENV}/lib

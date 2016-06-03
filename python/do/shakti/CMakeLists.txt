@@ -32,15 +32,14 @@ target_link_libraries(pyshakti
 # ============================================================================ #
 # Install the library in the currently active python environment.
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
-  "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+"from distutils.sysconfig import get_python_lib; print get_python_lib()"
   OUTPUT_VARIABLE PYTHON_SITE_PACKAGES_DIR
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-# N.B.: this is a kludge here until we find a better implementation.
-if (NOT SHAKTI_INSTALL_DIR STREQUAL /usr)
+if (SHAKTI_SELF_CONTAINED_INSTALLATION)
   set(PYTHON_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
   set(SHAKTI_PYTHON_INSTALL_DIR
-    ${SHAKTI_INSTALL_DIR}/lib/python${PYTHON_VERSION}/site-packages)
+    ${CMAKE_INSTALL_PREFIX}/lib/python${PYTHON_VERSION}/site-packages)
 else ()
   set(SHAKTI_PYTHON_INSTALL_DIR ${PYTHON_SITE_PACKAGES_DIR})
 endif ()
