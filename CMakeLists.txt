@@ -17,7 +17,7 @@ option(SHAKTI_BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(SHAKTI_BUILD_SAMPLES "Build samples in Shakti libraries" OFF)
 option(SHAKTI_BUILD_TESTS "Build unit tests for Shakti libraries" OFF)
 option(SHAKTI_SELF_CONTAINED_INSTALLATION
-  "Install C++ and Python libraries in a single self contained directory" OFF)
+  "Install C++ and Python libraries in a single self-contained directory" OFF)
 
 # Set default build type to Release mode.
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING
