@@ -27,7 +27,7 @@ if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
           COMPONENT Sources)
 
   # Install source files.
-  install(FILES ${DO_Shakti_SOURCE_DIR}/Defines.hpp
+  install(FILES ${CMAKE_BINARY_DIR}/src/DO/Shakti/Defines.hpp
           DESTINATION include/DO/Shakti
           COMPONENT Sources)
 
