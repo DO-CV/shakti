@@ -12,7 +12,6 @@ list(APPEND CMAKE_MODULE_PATH
      @CMAKE_INSTALL_PREFIX@/share/DO_Shakti/cmake)
 
 # Load DO-specific macros
-include(shakti_configure_nvcc_compiler)
 include(shakti_configure_cxx_compiler)
 include(shakti_macros)
 include(shakti_version)
