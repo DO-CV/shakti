@@ -100,7 +100,7 @@ TEST_F(TestFilters, test_gaussian)
 {
   // Convolve with Dirac.
   const auto n = _src_image.sizes()[0];
-  _src_image.array().fill(0.f);
+  _src_image.flat_array().fill(0.f);
   _src_image(n / 2, n / 2) = 1.f;
 
   MatrixXf true_matrix(3, 3);

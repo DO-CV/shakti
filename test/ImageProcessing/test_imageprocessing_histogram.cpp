@@ -31,7 +31,7 @@ TEST(TestHistogram, test_histogram)
   using sara::Rgba8;
 
   auto image = sara::Image<Rgba8>{ 5, 5 };
-  image.array().fill(Rgba8::Zero());
+  image.flat_array().fill(Rgba8::Zero());
 
   image(0, 0) = Rgba8(1, 1, 1, 0);
   image(1, 0) = Rgba8(1, 1, 1, 0);
