@@ -14,7 +14,7 @@ add_custom_target(copy_pyshakti_module)
 add_custom_command(TARGET copy_pyshakti_module
   COMMAND ${CMAKE_COMMAND} -E
   copy_directory ${DO_Shakti_DIR}/python/do
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/do)
+  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/do)
 
 # Copy pyshakti.[so, dll] to the runtime output directory.
 get_target_property(pyshakti_LIBRARY_PATH pyshakti LOCATION)
@@ -27,7 +27,7 @@ add_custom_command(TARGET copy_pyshakti_module
 # Run the unit tests.
 add_custom_target(pytest
   COMMAND ${NOSETESTS_EXECUTABLE} --with-coverage --cover-package=do
-  WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+  WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
   COMMENT "Running Python tests.")
 
 
