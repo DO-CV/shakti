@@ -1,6 +1,10 @@
 Shakti: CUDA Computer Vision Algorithms
 =======================================
 
+**I HAVE MOVED TO GITLAB, PLEASE GOTO: https://gitlab.com/DO-CV/shakti**
+
+**SO LONG GITHUB!**
+
 *Shakti* (शक्ति) is a lovely female Hindi first name meaning *power*.
 
 *Shakti* focuses on:
